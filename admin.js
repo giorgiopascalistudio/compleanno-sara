@@ -196,11 +196,16 @@
   document.getElementById("startBtn").addEventListener("click", () => {
     const count = Object.keys(players).length;
     if (count === 0 && !confirm("Nessun invitato è ancora entrato. Avviare comunque il gioco?")) return;
+    if (window.tryFullscreen) window.tryFullscreen(); // primo gesto utente: buon momento per chiedere lo schermo intero sul proiettore
     gameRef.set({
       state: "running",
       startedAt: firebase.database.ServerValue.TIMESTAMP,
       durationMs: DEFAULT_DURATION,
     });
+  });
+
+  document.getElementById("fsBtn").addEventListener("click", () => {
+    if (window.toggleFullscreen) window.toggleFullscreen();
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => {

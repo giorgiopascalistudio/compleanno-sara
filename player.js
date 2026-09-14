@@ -39,6 +39,7 @@
   let currentGame = null;
   let timerInterval = null;
   let lastReason = null;
+  let currentQ = 0; // indice della domanda mostrata (una alla volta)
 
   // --- elementi ---
   const screens = {
@@ -61,6 +62,8 @@
   const progressLabel = document.getElementById("progressLabel");
   const finalScore = document.getElementById("finalScore");
   const doneMsg = document.getElementById("doneMsg");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
 
   function playerRef() {
     return db.ref(base + "/players/" + playerId);
@@ -85,6 +88,7 @@
     e.preventDefault();
     const val = document.getElementById("nameInput").value.trim();
     if (!val) return;
+    if (window.tryFullscreen) window.tryFullscreen(); // primo gesto utente: unica occasione per chiedere lo schermo intero
     document.getElementById("joinBtn").disabled = true;
     joinAsPlayer(val.slice(0, 30));
     afterIdentityKnown();
@@ -174,39 +178,103 @@
 
   function buildQuiz() {
     quizBuilt = true;
-    qList.innerHTML = QUIZ_QUESTIONS.map((item, i) => {
-      const val = answersLocal["q" + i] || "";
-      return (
-        '<div class="card q-card' + (val ? " answered" : "") + '" id="qcard-' + i + '">' +
-        '<div class="q-head"><div class="q-num">' + (i + 1) + '</div><div class="q-text">' + escapeHtml(item.q) + "</div></div>" +
-        '<input type="text" id="qinput-' + i + '" placeholder="La tua risposta…" autocomplete="off" value="' + escapeAttr(val) + '">' +
-        '<div class="q-status" id="qstatus-' + i + '"></div>' +
-        "</div>"
-      );
-    }).join("");
+    currentQ = firstUnanswered();
+    renderQuestion();
+  }
 
-    QUIZ_QUESTIONS.forEach((item, i) => {
-      const input = document.getElementById("qinput-" + i);
-      let t = null;
-      input.addEventListener("input", () => {
-        clearTimeout(t);
-        t = setTimeout(() => saveAnswer(i, input.value), 450);
-      });
-      input.addEventListener("blur", () => {
-        clearTimeout(t);
-        saveAnswer(i, input.value);
-      });
+  function firstUnanswered() {
+    for (let i = 0; i < QUIZ_QUESTIONS.length; i++) {
+      if (!(answersLocal["q" + i] || "").trim()) return i;
+    }
+    return QUIZ_QUESTIONS.length - 1;
+  }
+
+  // le domande compaiono una alla volta: questa funzione ridisegna
+  // solo la domanda "currentQ" dentro #qList e aggiorna i pulsanti nav.
+  function renderQuestion() {
+    const i = currentQ;
+    const item = QUIZ_QUESTIONS[i];
+    const val = answersLocal["q" + i] || "";
+    const isLast = i === QUIZ_QUESTIONS.length - 1;
+
+    qList.innerHTML =
+      '<div class="card q-card' + (val ? " answered" : "") + '" id="qcard-active">' +
+      '<div class="q-head"><div class="q-num">' + (i + 1) + '</div><div class="q-text">' + escapeHtml(item.q) + "</div></div>" +
+      '<input type="text" id="qinput-active" placeholder="La tua risposta…" autocomplete="off" value="' + escapeAttr(val) + '">' +
+      '<div class="q-status" id="qstatus-active">' + (val.trim() ? "salvata ✓" : "") + "</div>" +
+      "</div>";
+
+    const input = document.getElementById("qinput-active");
+    let t = null;
+    input.addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(() => saveAnswer(i, input.value), 450);
     });
+    input.addEventListener("blur", () => {
+      clearTimeout(t);
+      saveAnswer(i, input.value);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); goNext(); }
+    });
+
+    prevBtn.disabled = i === 0;
+    nextBtn.textContent = isLast ? "Invia le risposte ✅" : "Avanti ✨";
+    nextBtn.classList.toggle("silver", !isLast);
     updateProgress();
+  }
+
+  function goPrev() {
+    if (currentQ === 0) return;
+    currentQ -= 1;
+    renderQuestion();
+  }
+
+  function goNext() {
+    const input = document.getElementById("qinput-active");
+    const value = input ? input.value : (answersLocal["q" + currentQ] || "");
+    saveAnswer(currentQ, value);
+    const isLast = currentQ === QUIZ_QUESTIONS.length - 1;
+    if (isLast) {
+      finishQuiz("submit");
+      return;
+    }
+    fireGlitterBurst(nextBtn);
+    currentQ += 1;
+    renderQuestion();
+  }
+
+  prevBtn.addEventListener("click", goPrev);
+  nextBtn.addEventListener("click", goNext);
+
+  function fireGlitterBurst(originEl) {
+    if (typeof confetti !== "function" || !originEl) return;
+    const rect = originEl.getBoundingClientRect();
+    confetti({
+      particleCount: 26,
+      spread: 75,
+      startVelocity: 34,
+      scalar: 0.75,
+      gravity: 0.9,
+      ticks: 90,
+      origin: {
+        x: (rect.left + rect.width / 2) / window.innerWidth,
+        y: (rect.top + rect.height / 2) / window.innerHeight,
+      },
+      colors: ["#fbe9ad", "#e0b24f", "#b0812a", "#f4f5f8", "#c7cad3"],
+      disableForReducedMotion: true,
+    });
   }
 
   function saveAnswer(i, value) {
     if (locked) return;
     answersLocal["q" + i] = value;
-    const card = document.getElementById("qcard-" + i);
-    const status = document.getElementById("qstatus-" + i);
-    card.classList.toggle("answered", value.trim().length > 0);
-    if (status) status.textContent = value.trim() ? "salvata ✓" : "";
+    if (i === currentQ) {
+      const card = document.getElementById("qcard-active");
+      const status = document.getElementById("qstatus-active");
+      if (card) card.classList.toggle("answered", value.trim().length > 0);
+      if (status) status.textContent = value.trim() ? "salvata ✓" : "";
+    }
     updateProgress();
     playerRef().update({
       ["answers/q" + i]: value,
@@ -231,8 +299,6 @@
     progressFill.style.width = Math.round((n / QUIZ_QUESTIONS.length) * 100) + "%";
     progressLabel.textContent = n;
   }
-
-  document.getElementById("submitBtn").addEventListener("click", () => finishQuiz("submit"));
 
   function finishQuiz(reason) {
     if (locked) {
