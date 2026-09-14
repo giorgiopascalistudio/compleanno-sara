@@ -9,13 +9,13 @@
    ============================================================ */
 
 const FIREBASE_CONFIG = {
-  apiKey: "INCOLLA_QUI_LA_TUA_API_KEY",
-  authDomain: "INCOLLA_QUI.firebaseapp.com",
-  databaseURL: "https://INCOLLA_QUI-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "INCOLLA_QUI",
-  storageBucket: "INCOLLA_QUI.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:xxxxxxxxxxxxxxxxxxxxxx",
+  apiKey: "AIzaSyCs9Jjlrv-RCBF8xbD44m0QIUwGijNfOYM",
+  authDomain: "compleanno-sara.firebaseapp.com",
+  databaseURL: "https://compleanno-sara-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "compleanno-sara",
+  storageBucket: "compleanno-sara.firebasestorage.app",
+  messagingSenderId: "670625628558",
+  appId: "1:670625628558:web:4477d466ce230e9f8c24df",
 };
 
 /* Identificatore della partita: cambialo (es. "sara-2026") se vuoi
