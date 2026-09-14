@@ -27,11 +27,13 @@
     return Date.now() + serverOffset;
   }
 
-  // --- identità giocatore (persistita per riprendere in caso di refresh) ---
-  const LS_ID = "quiz_playerId_" + GAME_ID;
-  const LS_NAME = "quiz_playerName_" + GAME_ID;
-  let playerId = localStorage.getItem(LS_ID);
-  let playerName = localStorage.getItem(LS_NAME);
+  // --- identità giocatore ---
+  // Nessuna persistenza tra visite: ogni volta che si apre questa pagina
+  // (cioè ogni volta che si inquadra il QR) si riparte da zero con il
+  // modulo per inserire il nome, invece di riprendere una sessione
+  // precedente salvata nel browser.
+  let playerId = null;
+  let playerName = null;
 
   const answersLocal = {}; // cache locale delle risposte digitate
   let quizBuilt = false;
@@ -72,8 +74,6 @@
   function joinAsPlayer(name) {
     playerId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
     playerName = name;
-    localStorage.setItem(LS_ID, playerId);
-    localStorage.setItem(LS_NAME, playerName);
     playerRef().set({
       name: name,
       joinedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -97,16 +97,8 @@
   function afterIdentityKnown() {
     topbarName.textContent = playerName;
     waitingName.textContent = playerName;
-    // se abbiamo già risposte salvate per questo giocatore (refresh a metà gioco), le carichiamo
-    // PRIMA di iniziare ad ascoltare lo stato del gioco, per evitare di costruire il quiz
-    // senza le risposte già date.
-    playerRef().once("value").then((snap) => {
-      const data = snap.val() || {};
-      if (data.answers) Object.assign(answersLocal, data.answers);
-      if (data.finishedAt) locked = true;
-      watchGame();
-      watchPlayersCount();
-    });
+    watchGame();
+    watchPlayersCount();
   }
 
   function watchPlayersCount() {
@@ -339,10 +331,6 @@
     return escapeHtml(s);
   }
 
-  // --- avvio ---
-  if (playerId && playerName) {
-    afterIdentityKnown();
-  } else {
-    showScreen("join");
-  }
+  // --- avvio: si parte sempre dal modulo nome ---
+  showScreen("join");
 })();

@@ -19,9 +19,18 @@
     let lastT = null;
 
     function resize() {
+      // entrare/uscire dallo schermo intero cambia le dimensioni della
+      // finestra: se non si ridisegna il <canvas> su queste nuove misure
+      // (anche solo per un istante durante la transizione, con misure a
+      // 0), il glitter resta "incollato" alle vecchie dimensioni e sparisce
+      // dalla parte nuova dello schermo — per questo si ignorano le misure
+      // non valide e si riprova al giro successivo.
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (w < 10 || h < 10) return;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = window.innerWidth;
-      H = window.innerHeight;
+      W = w;
+      H = h;
       canvas.width = W * dpr;
       canvas.height = H * dpr;
       canvas.style.width = W + "px";
@@ -29,6 +38,11 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const count = Math.round(W * H * density);
       particles = new Array(count).fill(0).map(makeParticle);
+    }
+
+    function onViewportChange() {
+      resize();
+      setTimeout(resize, 120); // ri-sincronizza a transizione fullscreen conclusa
     }
 
     function makeParticle() {
@@ -106,7 +120,10 @@
       if (!reduceMotion) requestAnimationFrame(frame);
     }
 
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", onViewportChange);
+    document.addEventListener("fullscreenchange", onViewportChange);
+    document.addEventListener("webkitfullscreenchange", onViewportChange);
+    document.addEventListener("msfullscreenchange", onViewportChange);
     resize();
     if (reduceMotion) {
       frame(0); // un solo frame statico, niente loop

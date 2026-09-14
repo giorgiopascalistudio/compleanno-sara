@@ -196,9 +196,12 @@
   }
 
   document.getElementById("startBtn").addEventListener("click", () => {
+    // la richiesta di schermo intero deve essere la primissima cosa del gestore:
+    // un confirm() prima "consuma" il gesto dell'utente e i browser rifiutano
+    // poi la richiesta di fullscreen.
+    if (window.tryFullscreen) window.tryFullscreen();
     const count = Object.keys(players).length;
     if (count === 0 && !confirm("Nessun invitato è ancora entrato. Avviare comunque il gioco?")) return;
-    if (window.tryFullscreen) window.tryFullscreen(); // primo gesto utente: buon momento per chiedere lo schermo intero sul proiettore
     gameRef.set({
       state: "running",
       startedAt: firebase.database.ServerValue.TIMESTAMP,
