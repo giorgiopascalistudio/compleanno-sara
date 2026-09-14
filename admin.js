@@ -1,5 +1,5 @@
 /* ============================================================
-   Quiz di compleanno — logica pagina admin / maxischermo (admin.html)
+   Quiz di compleanno — logica pagina regia / maxischermo (index.html)
    ============================================================ */
 
 (function () {
@@ -24,7 +24,9 @@
   const DEFAULT_DURATION = 600000; // 10 minuti
 
   // --- QR / link ---
-  const joinUrl = location.href.replace(/admin\.html.*$/, "index.html");
+  // pagina invitati = "gioco.html" nella stessa cartella di questa pagina,
+  // qualunque sia il nome/percorso con cui questa (la regia) è servita.
+  const joinUrl = location.href.replace(/[^/]*$/, "") + "gioco.html";
   document.getElementById("joinUrl").textContent = joinUrl;
   try {
     // eslint-disable-next-line no-undef

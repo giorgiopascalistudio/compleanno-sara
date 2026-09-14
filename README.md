@@ -1,23 +1,25 @@
 # 🎂✨ Quiz di compleanno — "Quanto conosci Sara?"
 
 Gioco live per il compleanno: gli invitati inquadrano un QR code dal telefono,
-inseriscono il loro nome ed entrano in un quiz di 30 domande su Sara. Quando
-l'host avvia il gioco parte per tutti un **timer di 10 minuti**; alla fine la
-pagina "regia" (da collegare al proiettore) mostra la **classifica generale**
-in tempo reale, con podio e coriandoli per il/la vincitore/trice.
+inseriscono il loro nome ed entrano in un quiz di 30 domande su Sara, una alla
+volta. Quando l'host avvia il gioco parte per tutti un **timer di 10 minuti**;
+alla fine la pagina "regia" (da collegare al proiettore) mostra la
+**classifica generale** in tempo reale, con podio e coriandoli per il/la
+vincitore/trice.
 
-Tema grafico **oro & argento**, con glitter animato di sottofondo e titoli in
-"lamina metallica" che scintilla.
+Tema grafico **oro & argento**, con pioggia di glitter animata sullo sfondo e
+titoli in "lamina metallica" che scintilla.
 
 ## Struttura dei file
 
 | File | A cosa serve |
 |---|---|
-| `index.html` + `player.js` | Pagina che gli invitati aprono dal telefono (quella puntata dal QR code) |
-| `admin.html` + `admin.js` | Pagina "regia": QR code, pulsante di avvio, timer e classifica live — da proiettare |
+| `index.html` + `admin.js` | **Pagina principale** — la "regia": QR code, pulsante di avvio, timer e classifica live. È quella da aprire sul portatile collegato al proiettore. |
+| `gioco.html` + `player.js` | Pagina che gli invitati aprono dal telefono — non si apre a mano, ci si arriva inquadrando il QR mostrato dalla regia. |
 | `quiz-data.js` | Le 30 domande e le risposte accettate (con varianti, maiuscole/minuscole e accenti ignorati) |
 | `style.css` | Stile condiviso (palette oro/argento, animazioni) |
-| `sparkles.js` | Il glitter animato sullo sfondo (canvas leggero, si disattiva da solo se il dispositivo ha "riduci animazioni" attivo) |
+| `sparkles.js` | La pioggia di glitter animata sullo sfondo (canvas leggero, si disattiva da solo se il dispositivo ha "riduci animazioni" attivo) |
+| `fullscreen.js` | Richiesta di schermo intero al primo tocco/click |
 | `firebase-config.js` | **Da compilare** con i dati del tuo progetto Firebase (vedi sotto) |
 
 Il sito è puramente statico (nessun server da installare): la sincronizzazione
@@ -87,10 +89,10 @@ In questa repository: **Settings → Pages → Build and deployment → Deploy
 from a branch** → branch `main`, cartella `/ (root)` → **Save**. Dopo la
 pubblicazione (1-2 minuti) le pagine saranno disponibili a:
 
-- **Pagina invitati (quella del QR code):**
+- **Pagina regia (il link principale, da collegare al proiettore):**
   `https://<tuo-utente>.github.io/compleanno-sara/`
-- **Pagina regia (da collegare al proiettore):**
-  `https://<tuo-utente>.github.io/compleanno-sara/admin.html`
+- **Pagina invitati:** non serve aprirla a mano — la regia mostra il suo QR
+  code (punta a `https://<tuo-utente>.github.io/compleanno-sara/gioco.html`)
 
 Committa e pusha `firebase-config.js` compilato: le chiavi di un progetto
 web Firebase **non sono segrete** (sono normalmente visibili nel codice di
@@ -99,30 +101,33 @@ database impostate al punto 1, non al nascondere questi valori.
 
 ## 4. Prova prima della festa
 
-1. Apri `admin.html` sul portatile che collegherai al proiettore.
-2. Dal tuo telefono (o da un altro dispositivo) apri `index.html`, inserisci
-   un nome di prova ed entra.
-3. Su `admin.html` premi **"Inizia il gioco"**: sul telefono di prova
-   dovrebbe apparire subito il quiz con il countdown.
-4. Rispondi a qualche domanda, premi **"Invia le risposte"** (o aspetta i 10
-   minuti) e controlla che il nome compaia nella classifica live e poi nel
-   podio finale su `admin.html`.
-5. Premi **"↺ Nuova partita"** su `admin.html` per azzerare tutto prima
+1. Apri la pagina principale (`index.html` / la regia) sul portatile che
+   collegherai al proiettore.
+2. Dal tuo telefono (o da un altro dispositivo) inquadra il QR mostrato lì
+   — oppure apri `gioco.html` a mano per una prova — inserisci un nome di
+   prova ed entra.
+3. Sulla regia premi **"Inizia il gioco"**: sul telefono di prova dovrebbe
+   apparire subito la prima domanda con il countdown.
+4. Rispondi (premi "Avanti" per passare alla successiva, "Indietro" per
+   tornare a modificare una risposta già data) fino all'ultima domanda dove
+   "Avanti" diventa **"Invia le risposte"** — controlla che il nome compaia
+   nella classifica live e poi nel podio finale sulla regia.
+5. Premi **"↺ Nuova partita"** sulla regia per azzerare tutto prima
    dell'arrivo degli invitati (cancella tutti i giocatori e i punteggi).
 
 ## 5. Il giorno della festa
 
-1. Genera e stampa (o mostra su un secondo schermo) il QR code: è quello
-   mostrato in `admin.html` prima dell'avvio, oppure genera un QR da
-   `https://<tuo-utente>.github.io/compleanno-sara/` con qualsiasi
-   generatore di QR code.
-2. Collega il portatile al proiettore e apri `admin.html`.
+1. Collega il portatile al proiettore e apri la pagina principale (la
+   regia) — è il link da tenere a portata di mano, gli invitati non lo
+   toccano mai: entrano solo inquadrando il QR che la regia mostra.
+2. Premi ⛶ in alto per mettere la regia a schermo intero (o lascia che
+   parta da sola al primo "Inizia il gioco").
 3. Lascia entrare gli invitati (il numero di "invitati pronti" sale in
-   tempo reale).
+   tempo reale mentre scansionano il QR).
 4. Premi **"Inizia il gioco"**: partono contemporaneamente il quiz su tutti
    i telefoni e il countdown sul proiettore.
-5. Dopo 10 minuti (o se premi manualmente fine sul countdown) il proiettore
-   mostra automaticamente il podio con i coriandoli.
+5. Dopo 10 minuti (o se il tempo scade prima) il proiettore mostra
+   automaticamente il podio con i coriandoli.
 
 ## Personalizzare
 
@@ -135,10 +140,11 @@ database impostate al punto 1, non al nascondere questi valori.
   aggiungine quante ne vuoi per accettare più varianti.
 - **Colori/font:** i colori sono definiti come variabili CSS all'inizio di
   `style.css` (`--gold-1`, `--gold-2`, `--silver-1`, `--silver-2`, ...).
-- **Densità del glitter:** in `index.html`/`admin.html` la riga
+- **Densità/velocità del glitter:** in `index.html`/`gioco.html` la riga
   `initGlitter("glitter", { density: ... })` controlla quante particelle
-  disegnare (più alto = più denso). Il glitter si disattiva da solo se il
-  dispositivo ha l'opzione "riduci animazioni" attiva.
+  disegnare; velocità di caduta e sfarfallio sono in `sparkles.js`. Il
+  glitter si disattiva da solo se il dispositivo ha l'opzione "riduci
+  animazioni" attiva.
 - **Più partite con lo stesso progetto Firebase:** cambia `GAME_ID` in
   `firebase-config.js` per isolare i dati di una nuova partita senza
   toccare quelli vecchi.

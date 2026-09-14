@@ -2,12 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Quiz di Compleanno — Quanto conosci Sara?</title>
-<meta name="description" content="Gioco live per il compleanno di Sara: rispondi al quiz in 10 minuti e scala la classifica!">
+<title>Regia Quiz — Maxischermo</title>
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -17,271 +16,202 @@
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
-    touch-action: pan-y;
-    overscroll-behavior-y: contain;
+    touch-action: manipulation;
   }
-  input, textarea {
-    -webkit-user-select: text;
-    user-select: text;
+  body { padding: 0; min-height: 100vh; overflow-x: hidden; }
+  #fsBtn { font-size: 1.1rem; line-height: 1; padding-left: 16px; padding-right: 16px; }
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(18px, 3vw, 48px);
   }
-  body { padding: 0 0 48px; }
-
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
+  .stage-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    padding: 14px 18px;
-    background: rgba(7, 6, 10, 0.82);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
+    gap: 16px;
+    flex-wrap: wrap;
   }
-  .topbar .who {
-    font-family: "Playfair Display", serif;
-    font-weight: 600;
-    font-size: 0.98rem;
-    color: var(--text-dim);
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand h1 { margin: 0; font-size: clamp(1.3rem, 3vw, 1.8rem); }
+  .brand .eyebrow { display: block; margin-bottom: 2px; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .screen { display: none; flex: 1; }
+  .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* --- PRE-GAME --- */
+  #screen-pre { align-items: center; justify-content: center; gap: 36px; text-align: center; }
+  .pre-grid { display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .qr-box {
+    background: #fff;
+    padding: 18px;
+    border-radius: 20px;
+    box-shadow: var(--shadow), 0 0 0 1px var(--line-strong), 0 0 40px -8px rgba(217, 180, 94, 0.45);
+    display: inline-flex;
   }
-  .topbar .who b { color: var(--gold-1); }
-  .timer-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .pre-info { max-width: 420px; text-align: left; }
+  .pre-info h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 8px 0 12px; }
+  .pre-info p { color: var(--text-dim); line-height: 1.55; margin: 0 0 18px; }
+  .link-row {
+    display: flex; gap: 8px; align-items: center;
+    background: var(--card-soft);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 22px;
+  }
+  .link-row code { color: var(--gold-1); font-size: 0.85rem; overflow-wrap: anywhere; flex: 1; }
+  .joined-pill {
+    display: inline-flex; align-items: center; gap: 10px;
     background: var(--card-soft);
     border: 1px solid var(--line-strong);
     border-radius: 999px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-family: "Playfair Display", serif;
-    font-weight: 600;
-    font-size: 1.05rem;
-  }
-  .timer-pill[hidden] { display: none; }
-  .timer-pill.low { background: rgba(255, 93, 122, 0.16); border-color: rgba(255, 93, 122, 0.5); color: #ffb3c0; }
-  .timer-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); flex: none; box-shadow: 0 0 8px var(--emerald); }
-  .timer-pill.low .dot { background: var(--ruby); box-shadow: 0 0 8px var(--ruby); animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
-
-  main { max-width: 640px; margin: 0 auto; padding: 28px 18px 0; }
-
-  .hero { text-align: center; padding: 24px 6px 6px; }
-  .balloon { font-size: 2.6rem; display: inline-block; animation: floaty 3.4s ease-in-out infinite; filter: drop-shadow(0 6px 14px rgba(217,180,94,0.35)); }
-  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-9px) rotate(2deg); } }
-  .hero h1 { font-size: clamp(1.7rem, 6vw, 2.3rem); margin: 12px 0 10px; }
-  .hero p { color: var(--text-dim); margin: 0; line-height: 1.55; }
-
-  .screen { display: none; }
-  .screen.active { display: block; animation: fadeIn 0.55s cubic-bezier(.2,.8,.2,1) both; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-
-  .join-card { padding: 28px 22px; margin-top: 20px; }
-  .field { margin-bottom: 16px; }
-  .field label {
-    display: block;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
     font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 18px;
   }
-  input[type="text"] {
+  .joined-names { display: flex; flex-wrap: wrap; gap: 8px; max-width: 480px; margin-bottom: 22px; }
+  .name-chip {
+    background: var(--card-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+
+  /* --- IN CORSO --- */
+  #screen-live { gap: 26px; }
+  .live-head { text-align: center; }
+  .big-timer {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: clamp(3.5rem, 12vw, 7rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .big-timer.low { color: var(--ruby); animation: pulse 1s infinite; text-shadow: 0 0 30px rgba(255,93,122,0.5); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .live-sub { color: var(--text-dim); margin-top: 6px; }
+
+  .board { flex: 1; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-content: start; }
+  .row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    animation: rowIn 0.35s ease both;
+  }
+  @keyframes rowIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .row .rank { flex: none; width: 34px; text-align: center; font-family: "Playfair Display", serif; font-weight: 700; color: var(--text-dim); }
+  .row.top1 .rank { color: var(--gold-1); }
+  .row.top2 .rank { color: var(--silver-1); }
+  .row.top3 .rank { color: #dba86a; }
+  .row .rname { flex: 1; font-weight: 700; font-family: "Playfair Display", serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .rstatus { font-size: 0.72rem; color: var(--text-dim); font-family: "Manrope", sans-serif; font-weight: 400; }
+  .row .rscore { font-family: "Playfair Display", serif; font-weight: 700; font-size: 1.1rem; color: var(--emerald); }
+
+  /* --- FINALE --- */
+  #screen-final { align-items: center; justify-content: flex-start; gap: 20px; padding-top: clamp(10px, 3vh, 30px); }
+  #screen-final h2 { font-size: clamp(1.8rem, 5vw, 3rem); text-align: center; margin: 0; }
+  .podium { display: flex; align-items: flex-end; gap: 18px; justify-content: center; margin: 10px 0 8px; width: 100%; }
+  .podium .place {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    width: min(30vw, 190px);
+    opacity: 0;
+    animation: riseIn 0.6s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  .podium .p1 { animation-delay: 0.35s; }
+  .podium .p2 { animation-delay: 0.1s; }
+  .podium .p3 { animation-delay: 0.55s; }
+  @keyframes riseIn { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+  .podium .medal { font-size: 2.3rem; }
+  .podium .p1 .medal { animation: bounce 1.8s ease-in-out 1s infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  .podium .pname { font-family: "Playfair Display", serif; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+  .podium .pscore { color: var(--gold-1); font-weight: 700; }
+  .podium .bar {
     width: 100%;
-    padding: 14px 16px;
-    border-radius: 12px;
-    border: 1.5px solid var(--line-strong);
-    background: var(--bg-deep);
-    color: var(--text);
-    font-size: 1.05rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(180deg, var(--card-soft), var(--card));
+    border: 1px solid var(--line-strong);
+    border-bottom: none;
   }
-  input[type="text"]:focus { border-color: var(--gold-2); box-shadow: 0 0 0 3px rgba(217, 180, 94, 0.18); }
-  .join-card .btn { width: 100%; margin-top: 6px; }
-  .hint { color: var(--text-dim); font-size: 0.82rem; margin-top: 10px; text-align: center; }
+  .podium .p1 .bar { height: 150px; background: linear-gradient(180deg, rgba(217,180,94,0.4), var(--card-soft)); box-shadow: 0 0 40px -6px rgba(217,180,94,0.5); }
+  .podium .p2 .bar { height: 105px; background: linear-gradient(180deg, rgba(199,202,211,0.3), var(--card-soft)); }
+  .podium .p3 .bar { height: 80px; }
+  .podium .p1 { order: 2; }
+  .podium .p2 { order: 1; }
+  .podium .p3 { order: 3; }
 
-  .waiting-card { padding: 36px 22px; text-align: center; margin-top: 20px; }
-  .spinner {
-    width: 50px; height: 50px; margin: 0 auto 20px;
-    border-radius: 50%;
-    border: 4px solid var(--line);
-    border-top-color: var(--gold-2);
-    border-right-color: var(--silver-2);
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .waiting-card h2 { margin: 0 0 8px; font-size: 1.35rem; }
-  .waiting-card p { color: var(--text-dim); margin: 0; }
-  .party-count {
-    margin-top: 20px;
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-    background: var(--card-soft);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-family: "Playfair Display", serif;
-    font-weight: 600;
-  }
-
-  .progress-wrap { margin: 20px 0 22px; }
-  .progress-track {
-    height: 9px;
-    border-radius: 999px;
-    background: var(--card-soft);
-    overflow: hidden;
-    border: 1px solid var(--line);
-  }
-  .progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--silver-2), var(--gold-1), var(--gold-2));
-    background-size: 200% auto;
-    width: 0%;
-    transition: width 0.3s ease;
-    animation: shine 4s linear infinite;
-  }
-  .progress-label {
-    margin-top: 8px;
-    font-size: 0.82rem;
-    color: var(--text-dim);
-    text-align: right;
-  }
-
-  .q-list { display: flex; flex-direction: column; gap: 14px; }
-  .q-card { padding: 18px; animation: fadeIn 0.4s ease both; }
-  .q-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
-  .q-num {
-    flex: none;
-    width: 32px; height: 32px;
-    border-radius: 10px;
-    background: var(--card-soft);
-    border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
-    font-family: "Playfair Display", serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--gold-1);
-  }
-  .q-card.answered .q-num { background: rgba(82, 230, 176, 0.14); border-color: rgba(82, 230, 176, 0.4); color: var(--emerald); }
-  .q-text { font-size: 1.02rem; line-height: 1.4; padding-top: 4px; }
-  .q-card input[type="text"] { font-size: 1rem; padding: 12px 14px; }
-  .q-status { font-size: 0.76rem; color: var(--emerald); margin-top: 6px; min-height: 1em; }
-
-  .nav-bar {
-    position: sticky;
-    bottom: 0;
-    margin-top: 22px;
-    padding: 16px 0 4px;
-    display: flex;
-    gap: 10px;
-    background: linear-gradient(180deg, transparent, var(--bg) 32%);
-  }
-  .nav-bar .btn { padding: 16px; font-size: 1.05rem; }
-  .nav-bar #prevBtn { flex: 0 0 auto; padding-left: 20px; padding-right: 20px; }
-  .nav-bar #nextBtn { flex: 1; }
-  .nav-bar #prevBtn:disabled { opacity: 0.35; }
-
-  .done-card { padding: 38px 22px; text-align: center; margin-top: 20px; }
-  .done-card .score {
-    font-family: "Playfair Display", serif;
-    font-weight: 700;
-    font-size: 3.6rem;
-    margin: 8px 0 2px;
-  }
-  .done-card .score-of { color: var(--text-dim); margin-bottom: 20px; }
-  .done-card p.msg { color: var(--text-dim); line-height: 1.6; }
-
-  footer.foot {
-    max-width: 640px;
-    margin: 36px auto 0;
-    padding: 0 18px;
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 0.78rem;
-  }
+  .rest-list { width: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+  .empty-note { color: var(--text-dim); text-align: center; padding: 30px 0; }
 </style>
 </head>
 <body>
 <canvas id="glitter"></canvas>
 
 <div class="page">
-<div class="topbar">
-  <div class="who">✨ <b id="topbarName">Ospite</b></div>
-  <div class="timer-pill tabular" id="timerPill" hidden>
-    <span class="dot"></span><span id="timerText">10:00</span>
+<div class="stage">
+  <div class="stage-top">
+    <div class="brand">
+      <span class="eyebrow">Quiz di compleanno</span>
+      <h1 class="foil">Quanto conosci Sara? 🎂</h1>
+    </div>
+    <div class="controls">
+      <button class="btn ghost" id="fsBtn" title="Schermo intero">⛶</button>
+      <button class="btn ghost" id="resetBtn">↺ Nuova partita</button>
+    </div>
   </div>
-</div>
 
-<main>
-
-  <!-- SCREEN: nome -->
-  <section class="screen active" id="screen-join">
-    <div class="hero">
-      <div class="balloon">🎂</div>
-      <h1 class="foil">Quanto conosci Sara?</h1>
-      <p>Inserisci il tuo nome ed entra nel gioco: quando l'host darà il via avrai <b>10 minuti</b> per rispondere a 30 domande su di lei. La classifica finale sarà proiettata in sala!</p>
-    </div>
-    <form class="card join-card" id="joinForm">
-      <div class="field">
-        <label for="nameInput">Il tuo nome</label>
-        <input type="text" id="nameInput" placeholder="Es. Marco" maxlength="30" autocomplete="off" required>
+  <!-- PRE-GAME -->
+  <section class="screen active" id="screen-pre">
+    <div class="pre-grid">
+      <div class="qr-box" id="qrBox"></div>
+      <div class="pre-info">
+        <div class="joined-pill">🥂 <span id="preCount">0</span> invitati pronti</div>
+        <h2>Inquadra il QR ed entra nel gioco</h2>
+        <div class="link-row"><code id="joinUrl">—</code></div>
+        <div class="joined-names" id="joinedNames"></div>
+        <button class="btn" id="startBtn">Inizia il gioco — 10 minuti ⏱️</button>
       </div>
-      <button type="submit" class="btn" id="joinBtn">Entra nel gioco ✨</button>
-      <p class="hint">Il nome comparirà nella classifica sul maxischermo.</p>
-    </form>
-  </section>
-
-  <!-- SCREEN: attesa -->
-  <section class="screen" id="screen-waiting">
-    <div class="card waiting-card">
-      <div class="spinner"></div>
-      <h2>Sei dentro, <span id="waitingName">—</span>!</h2>
-      <p>Aspetta che l'host avvii il gioco dal maxischermo…</p>
-      <div class="party-count">🥂 <span id="playersCount">0</span> invitati pronti</div>
     </div>
   </section>
 
-  <!-- SCREEN: quiz -->
-  <section class="screen" id="screen-quiz">
-    <div class="progress-wrap">
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-label"><span id="progressLabel">0</span>/30 risposte date</div>
+  <!-- LIVE -->
+  <section class="screen" id="screen-live">
+    <div class="live-head">
+      <div class="big-timer tabular" id="liveTimer">10:00</div>
+      <div class="live-sub"><span id="liveCount">0</span> giocatori in gara</div>
     </div>
-    <div class="q-list" id="qList"></div>
-    <div class="nav-bar">
-      <button class="btn ghost" id="prevBtn">← Indietro</button>
-      <button class="btn silver" id="nextBtn">Avanti ✨</button>
-    </div>
+    <div class="board" id="liveBoard"></div>
   </section>
 
-  <!-- SCREEN: fine -->
-  <section class="screen" id="screen-done">
-    <div class="card done-card">
-      <div class="eyebrow">Risultato</div>
-      <div class="score tabular foil" id="finalScore">0</div>
-      <div class="score-of">risposte corrette su 30</div>
-      <p class="msg" id="doneMsg">Grazie per aver giocato! Guarda la classifica generale sul maxischermo per scoprire la tua posizione 🏆</p>
-    </div>
+  <!-- FINALE -->
+  <section class="screen" id="screen-final">
+    <h2 class="foil">🏆 Classifica finale 🏆</h2>
+    <div class="podium" id="podium"></div>
+    <div class="rest-list" id="restList"></div>
   </section>
-
-</main>
-
-<footer class="foot">Quiz di compleanno · fatto con 💛🤍 per Sara</footer>
+</div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.4/confetti.browser.js"></script>
 <script src="firebase-config.js"></script>
-<script src="quiz-data.js"></script>
 <script src="sparkles.js"></script>
 <script src="fullscreen.js"></script>
-<script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="player.js"></script>
+<script>if (window.initGlitter) initGlitter("glitter", { density: 0.00011 });</script>
+<script src="admin.js"></script>
 </body>
 </html>

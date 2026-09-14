@@ -1,5 +1,6 @@
 /* ============================================================
-   Glitter oro & argento — sfondo animato leggero su <canvas>.
+   Glitter oro & argento — pioggia di brillantini animata su <canvas>.
+   Cade dall'alto come una cascata, con bagliore e picchi di luce.
    ============================================================ */
 
 (function () {
@@ -15,6 +16,7 @@
     const density = (opts && opts.density) || 0.00009; // particelle per px^2
     let W, H, dpr;
     let particles = [];
+    let lastT = null;
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -30,61 +32,74 @@
     }
 
     function makeParticle() {
-      const star = Math.random() < 0.3;
+      const star = Math.random() < 0.32;
       return {
-        x: Math.random() * W,
+        homeX: Math.random() * W,
         y: Math.random() * H,
-        r: star ? 2.4 + Math.random() * 2.8 : 0.6 + Math.random() * 1.7,
+        r: star ? 2.4 + Math.random() * 2.8 : 0.7 + Math.random() * 1.8,
         star: star,
         color: COLORS[(Math.random() * COLORS.length) | 0],
-        phase: Math.random() * Math.PI * 2,
-        speed: 1.1 + Math.random() * 2,
-        driftX: (Math.random() - 0.5) * 0.16,
-        driftY: -0.09 - Math.random() * 0.2,
+        twPhase: Math.random() * Math.PI * 2,
+        twSpeed: 1.3 + Math.random() * 2.2, // velocità dello sfarfallio
+        fall: 26 + Math.random() * 46, // px/s di caduta — la "cascata"
+        swayAmp: 6 + Math.random() * 16, // ampiezza dell'ondeggio laterale
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: 0.4 + Math.random() * 0.6,
       };
     }
 
-    function drawStar(p, alpha) {
+    function drawStar(p, x, alpha, glow) {
       ctx.save();
-      ctx.translate(p.x, p.y);
+      ctx.translate(x, p.y);
       ctx.globalAlpha = alpha;
       ctx.shadowColor = p.color;
-      ctx.shadowBlur = 6 + p.r;
+      ctx.shadowBlur = glow;
       ctx.strokeStyle = p.color;
-      ctx.lineWidth = 1.1;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(-p.r, 0); ctx.lineTo(p.r, 0);
       ctx.moveTo(0, -p.r); ctx.lineTo(0, p.r);
       ctx.stroke();
+      if (alpha > 0.82) {
+        // picco di luce: un piccolo bagliore bianco al centro, come un vero riflesso
+        ctx.globalAlpha = (alpha - 0.82) / 0.18;
+        ctx.fillStyle = "#fffdf6";
+        ctx.beginPath();
+        ctx.arc(0, 0, p.r * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
     }
 
-    function drawDot(p, alpha) {
+    function drawDot(p, x, alpha, glow) {
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.shadowColor = p.color;
-      ctx.shadowBlur = 3 + p.r;
+      ctx.shadowBlur = glow;
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.arc(x, p.y, p.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
 
     function frame(t) {
+      if (lastT === null) lastT = t;
+      const dt = Math.min(0.05, (t - lastT) / 1000); // secondi, clampato per evitare salti
+      lastT = t;
+
       ctx.clearRect(0, 0, W, H);
       for (const p of particles) {
-        // contrasto alto: il glitter si "accende" e si spegne, non resta sempre visibile
-        const tw = 0.12 + 0.88 * Math.pow(Math.abs(Math.sin(t * 0.0016 * p.speed + p.phase)), 1.6);
-        p.x += p.driftX;
-        p.y += p.driftY;
-        if (p.y < -6) p.y = H + 6;
-        if (p.x < -6) p.x = W + 6;
-        if (p.x > W + 6) p.x = -6;
+        // contrasto alto: il glitter si "accende" e si spegne, non resta sempre acceso
+        const tw = 0.1 + 0.9 * Math.pow(Math.abs(Math.sin(t * 0.0017 * p.twSpeed + p.twPhase)), 1.7);
+        p.y += p.fall * dt;
+        if (p.y > H + 8) { p.y = -8; p.homeX = Math.random() * W; }
+        const x = p.homeX + Math.sin(t * 0.001 * p.swaySpeed + p.swayPhase) * p.swayAmp;
+        const glow = (p.star ? 7 : 4) + p.r * 1.6 + tw * 6;
         if (p.star) {
-          drawStar(p, tw);
+          drawStar(p, x, tw, glow);
         } else {
-          drawDot(p, tw);
+          drawDot(p, x, tw, glow);
         }
       }
       ctx.globalAlpha = 1;

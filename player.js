@@ -1,5 +1,5 @@
 /* ============================================================
-   Quiz di compleanno — logica pagina ospite (index.html)
+   Quiz di compleanno — logica pagina ospite (gioco.html)
    ============================================================ */
 
 (function () {
