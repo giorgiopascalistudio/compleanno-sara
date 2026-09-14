@@ -1,0 +1,179 @@
+/* ============================================================
+   Quiz di compleanno — tema oro & argento, stile condiviso
+   ============================================================ */
+
+:root {
+  --bg: #2c1e09;
+  --bg-deep: #1c1204;
+  --card: #3c2a10;
+  --card-soft: #4d3717;
+  --line: rgba(248, 231, 176, 0.30);
+  --line-strong: rgba(248, 231, 176, 0.52);
+
+  --gold-1: #fbe9ad;
+  --gold-2: #e0b24f;
+  --gold-3: #b0812a;
+  --silver-1: #f4f5f8;
+  --silver-2: #c7cad3;
+  --silver-3: #8d8f99;
+
+  --text: #fdf6e6;
+  --text-dim: #d2bf92;
+  --emerald: #52e6b0;
+  --ruby: #ff5d7a;
+
+  --radius: 18px;
+  --shadow: 0 20px 46px -20px rgba(20, 12, 2, 0.75);
+  --metal: linear-gradient(120deg, var(--gold-3), var(--gold-1) 22%, var(--gold-2) 38%, var(--silver-1) 50%, var(--gold-2) 64%, var(--gold-1) 82%, var(--gold-3));
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 720px at 12% -12%, rgba(251, 233, 173, 0.32), transparent 62%),
+    radial-gradient(1000px 680px at 100% 6%, rgba(224, 178, 79, 0.26), transparent 58%),
+    radial-gradient(900px 600px at 50% 118%, rgba(224, 178, 79, 0.22), transparent 62%),
+    radial-gradient(500px 420px at 96% 100%, rgba(199, 202, 211, 0.10), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Manrope", -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+h1, h2, h3, .display {
+  font-family: "Playfair Display", "Georgia", serif;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+a { color: var(--gold-1); }
+button { font-family: inherit; cursor: pointer; }
+::selection { background: var(--gold-2); color: #2c1e09; }
+
+/* --- canvas glitter, dietro a tutto --- */
+#glitter {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: var(--metal);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 5s linear infinite;
+}
+
+/* titolo/testo in "lamina metallica" oro-argento in movimento */
+.foil {
+  background: var(--metal);
+  background-size: 260% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+  to { background-position: 260% center; }
+}
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: "Manrope", sans-serif;
+  letter-spacing: 0.01em;
+  background: linear-gradient(135deg, var(--gold-1), var(--gold-2) 55%, var(--gold-3));
+  color: #241a08;
+  box-shadow: 0 14px 30px -12px rgba(217, 180, 94, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  overflow: hidden;
+}
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: skewX(-20deg);
+  animation: sweep 3.2s ease-in-out infinite;
+}
+@keyframes sweep {
+  0% { left: -60%; }
+  35%, 100% { left: 140%; }
+}
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+.btn:disabled::after { display: none; }
+
+.btn.silver {
+  background: linear-gradient(135deg, var(--silver-1), var(--silver-2) 55%, var(--silver-3));
+  color: #232630;
+  box-shadow: 0 14px 30px -12px rgba(199, 202, 211, 0.45);
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1.5px solid var(--line-strong);
+  box-shadow: none;
+  color: var(--text);
+}
+.btn.ghost::after { display: none; }
+
+.card {
+  background: linear-gradient(180deg, var(--card), var(--card-soft));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(251, 233, 173, 0.65), rgba(199, 202, 211, 0.14) 40%, rgba(224, 178, 79, 0.45) 70%, rgba(199, 202, 211, 0.2));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+.fade-in { animation: fadeIn 0.55s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
