@@ -10,6 +10,6 @@
    ============================================================ */
 
 const CLOUDINARY_CONFIG = {
-  cloudName: "INCOLLA_QUI_IL_CLOUD_NAME",
-  uploadPreset: "INCOLLA_QUI_IL_NOME_DEL_PRESET",
+  cloudName: "dmlkpuakq",
+  uploadPreset: "compleanno_sara",
 };
