@@ -8,8 +8,12 @@
 (function () {
   "use strict";
 
+  // Nota: "CLOUDINARY_CONFIG" (dichiarato con `const` in cloudinary-config.js)
+  // NON diventa una proprietà di `window`, a differenza di "firebase" (che lo
+  // script del SDK imposta esplicitamente) — per questo qui si controlla la
+  // variabile diretta, non "window.CLOUDINARY_CONFIG" (che è sempre undefined).
   const fbReady = window.firebase && FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey.indexOf("INCOLLA") !== 0;
-  const cloudReady = window.CLOUDINARY_CONFIG && CLOUDINARY_CONFIG.cloudName.indexOf("INCOLLA") !== 0 && CLOUDINARY_CONFIG.uploadPreset.indexOf("INCOLLA") !== 0;
+  const cloudReady = typeof CLOUDINARY_CONFIG !== "undefined" && CLOUDINARY_CONFIG.cloudName.indexOf("INCOLLA") !== 0 && CLOUDINARY_CONFIG.uploadPreset.indexOf("INCOLLA") !== 0;
 
   if (!fbReady || !cloudReady) {
     document.querySelector("main").innerHTML =
