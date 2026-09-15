@@ -31,8 +31,8 @@
     // eslint-disable-next-line no-undef
     new QRCode(document.getElementById("qrBox"), {
       text: joinUrl,
-      width: 200,
-      height: 200,
+      width: 230,
+      height: 230,
       correctLevel: QRCode.CorrectLevel.H,
     });
   } catch (e) { /* libreria QR non caricata: link testuale resta visibile */ }
@@ -217,8 +217,13 @@
     });
   });
 
-  document.getElementById("fsBtn").addEventListener("click", () => {
-    if (window.toggleFullscreen) window.toggleFullscreen();
+  document.getElementById("endNowBtn").addEventListener("click", () => {
+    // per quando tutti gli invitati finiscono prima dello scadere del tempo:
+    // chiude subito la partita e passa alla classifica finale, come se il
+    // tempo fosse scaduto in questo istante.
+    if (!confirm("Terminare subito la partita e mostrare la classifica?")) return;
+    stopTimer();
+    endGame();
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => {

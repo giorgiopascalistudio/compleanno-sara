@@ -19,7 +19,17 @@
     touch-action: manipulation;
   }
   body { padding: 0; min-height: 100vh; overflow-x: hidden; }
-  #fsBtn { font-size: 1.1rem; line-height: 1; padding-left: 16px; padding-right: 16px; }
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    line-height: 1;
+  }
   .stage {
     position: relative;
     min-height: 100vh;
@@ -59,27 +69,28 @@
   .pre-grid { display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; }
   .qr-box {
     background: #fff;
-    padding: 18px;
-    border-radius: 20px;
-    box-shadow: var(--shadow), 0 0 0 1px var(--line-strong), 0 0 40px -8px rgba(217, 180, 94, 0.45);
+    padding: 22px;
+    border-radius: 24px;
+    box-shadow: var(--shadow), 0 0 0 1px var(--line-strong), 0 0 50px -8px rgba(217, 180, 94, 0.5);
     display: inline-flex;
   }
-  .pre-info { max-width: 420px; text-align: left; }
-  .pre-info h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 8px 0 18px; }
+  .pre-info { max-width: 380px; text-align: left; }
+  .pre-info h2 { font-size: clamp(1.8rem, 4.6vw, 2.7rem); margin: 8px 0 20px; }
   .pre-info p { color: var(--text-dim); line-height: 1.55; margin: 0 0 18px; }
+  /* riquadro secondario: il QR e l'invito a inquadrarlo restano il punto focale */
   .start-card {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 26px 28px;
-    margin: 0 0 22px;
+    gap: 14px;
+    padding: 12px 16px;
+    margin: 0 0 18px;
+    width: fit-content;
   }
-  .start-count { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .start-count { display: flex; flex-direction: column; align-items: center; gap: 0; padding-right: 12px; border-right: 1px solid var(--line); }
   .start-count-num {
     font-family: "Playfair Display", serif;
     font-weight: 700;
-    font-size: 2.6rem;
+    font-size: 1.5rem;
     line-height: 1;
     background: var(--metal);
     background-size: 200% auto;
@@ -89,13 +100,14 @@
     animation: shine 5s linear infinite;
   }
   .start-count-label {
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     font-weight: 700;
     color: var(--text-dim);
+    white-space: nowrap;
   }
-  .start-card .btn { width: 100%; }
+  .start-card .btn { font-size: 0.88rem; padding: 10px 16px; white-space: nowrap; }
   .joined-names { display: flex; flex-wrap: wrap; gap: 8px; max-width: 480px; }
   .name-chip {
     background: var(--card-soft);
@@ -121,6 +133,7 @@
   .big-timer.low { color: var(--ruby); animation: pulse 1s infinite; text-shadow: 0 0 30px rgba(255,93,122,0.5); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .live-sub { color: var(--text-dim); margin-top: 6px; }
+  .end-now-btn { margin-top: 20px; font-size: 0.85rem; padding: 10px 20px; }
 
   .board { flex: 1; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-content: start; }
   .row {
@@ -210,8 +223,7 @@
 <div class="page">
 <div class="stage">
   <div class="controls">
-    <button class="btn ghost" id="fsBtn" title="Schermo intero">⛶</button>
-    <button class="btn ghost" id="resetBtn">↺ Nuova partita</button>
+    <button class="btn ghost icon-btn" id="resetBtn" title="Nuova partita" aria-label="Nuova partita">↺</button>
   </div>
   <div class="brand">
     <span class="eyebrow">Quiz di compleanno</span>
@@ -241,6 +253,7 @@
     <div class="live-head">
       <div class="big-timer tabular" id="liveTimer">10:00</div>
       <div class="live-sub"><span id="liveCount">0</span> giocatori in gara</div>
+      <button class="btn ghost end-now-btn" id="endNowBtn">🏁 Tutti hanno finito — mostra la classifica</button>
     </div>
     <div class="board" id="liveBoard"></div>
   </section>
