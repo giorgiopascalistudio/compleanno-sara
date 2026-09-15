@@ -12,7 +12,7 @@
   const HOLD_MS = 3000;
   const OUT_MS = 500;
 
-  let photos = [];
+  let photos = []; // [{ key, url }, ...] — key = id del record su Firebase
   let idx = 0;
   let cycleTimer = null;
   let running = false;
@@ -27,14 +27,15 @@
     if (!running || !photos.length) return;
     const img = document.getElementById("photoImg");
     if (!img) return;
-    const url = photos[idx % photos.length];
-    img.src = url;
+    const photo = photos[idx % photos.length];
+    img.src = photo.url;
+    img.dataset.key = photo.key;
     img.classList.remove("photo-out");
     void img.offsetWidth; // forza il reflow: l'animazione riparte da capo anche se la classe era già stata rimossa
     img.classList.add("photo-in");
 
     const nextIdx = (idx + 1) % photos.length;
-    preload(photos[nextIdx]);
+    if (photos[nextIdx]) preload(photos[nextIdx].url);
     idx = nextIdx;
 
     clearTimeout(cycleTimer);
@@ -47,17 +48,21 @@
   }
 
   window.initPhotoSlideshow = function (db, base) {
-    db.ref(base + "/photos").orderByChild("uploadedAt").on("value", (snap) => {
+    const photosRef = db.ref(base + "/photos");
+
+    photosRef.orderByChild("uploadedAt").on("value", (snap) => {
       const list = [];
       snap.forEach((child) => {
         const v = child.val();
-        if (v && v.url) list.push(v.url);
+        if (v && v.url) list.push({ key: child.key, url: v.url });
       });
       const hadNone = photos.length === 0;
       photos = list;
 
       const empty = document.getElementById("photoEmpty");
+      const deleteBtn = document.getElementById("deletePhotoBtn");
       if (empty) empty.hidden = photos.length > 0;
+      if (deleteBtn) deleteBtn.hidden = photos.length === 0;
 
       if (!photos.length) {
         clearTimeout(cycleTimer);
@@ -72,6 +77,27 @@
         idx = 0;
       }
     });
+
+    // Cancellare la foto originale su Cloudinary NON la toglie dal loop:
+    // qui si mostra solo il link salvato nel database del gioco, quindi va
+    // tolto anche da lì. Il cestino sulla foto in mostra fa proprio questo
+    // (senza toccare Cloudinary, che resta comunque il tuo archivio foto).
+    const deleteBtn = document.getElementById("deletePhotoBtn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => {
+        const img = document.getElementById("photoImg");
+        const key = img && img.dataset.key;
+        if (!key) return;
+        const doRemove = () => {
+          photosRef.child(key).remove().catch((e) => console.error("Errore nel togliere la foto:", e));
+        };
+        if (window.pageConfirm) {
+          window.pageConfirm("Togliere questa foto dal loop sul maxischermo? Resta comunque su Cloudinary.", doRemove);
+        } else {
+          doRemove();
+        }
+      });
+    }
 
     return {
       start() {

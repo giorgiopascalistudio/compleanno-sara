@@ -38,8 +38,8 @@
     });
     new QRCode(document.getElementById("photoQrBox"), {
       text: photoUrl,
-      width: 92,
-      height: 92,
+      width: 170,
+      height: 170,
       correctLevel: QRCode.CorrectLevel.H,
     });
   } catch (e) { /* libreria QR non caricata: link testuale resta visibile */ }
@@ -59,8 +59,12 @@
     live: document.getElementById("screen-live"),
     final: document.getElementById("screen-final"),
   };
+  const stageEl = document.querySelector(".stage");
   function showScreen(name) {
     Object.entries(screens).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    // sulla schermata foto niente titolo/eyebrow né "↺ Nuova partita": resta
+    // solo l'iconcina del gioco (vedi CSS .stage.mode-photos)
+    stageEl.classList.toggle("mode-photos", name === "photos");
   }
   // Le foto sono la schermata di default per tutta la serata: si passa al
   // quiz solo premendo l'iconcina discreta, e si torna alle foto con
@@ -263,6 +267,7 @@
     modalCancel.addEventListener("click", onCancelClick);
     modalOverlay.addEventListener("click", onOverlayClick);
   }
+  window.pageConfirm = askConfirm; // riusata da photos.js per il cestino sulle foto
 
   document.getElementById("startBtn").addEventListener("click", () => {
     // la richiesta di schermo intero deve essere la primissima cosa del gestore
