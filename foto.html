@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Scatta un ricordo — Compleanno di Sara</title>
+<meta name="description" content="Scatta o carica una foto ricordo della festa: apparirà sul maxischermo!">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  html, body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  body { padding: 0 0 48px; }
+
+  main { max-width: 520px; margin: 0 auto; padding: 32px 18px 0; }
+
+  .hero { text-align: center; padding: 16px 6px 26px; }
+  .hero .balloon { font-size: 2.6rem; display: inline-block; animation: floaty 3.4s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-9px) rotate(2deg); } }
+  .hero h1 { font-size: clamp(1.6rem, 6vw, 2.1rem); margin: 12px 0 10px; }
+  .hero p { color: var(--text-dim); margin: 0; line-height: 1.55; }
+
+  .shot-card { padding: 26px 22px; text-align: center; }
+  .shot-card.hidden-card { display: none; }
+
+  #pickBtn { width: 100%; }
+
+  .preview-wrap { margin-top: 20px; }
+  .preview-wrap img {
+    width: 100%;
+    max-height: 50vh;
+    object-fit: contain;
+    border-radius: 14px;
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+  }
+  .preview-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .preview-actions .btn { flex: 1; }
+
+  .status-msg { margin-top: 14px; color: var(--text-dim); font-size: 0.88rem; min-height: 1.2em; }
+
+  .done-icon { font-size: 3rem; margin-bottom: 6px; }
+  .done-card p { color: var(--text-dim); line-height: 1.55; margin: 10px 0 22px; }
+</style>
+</head>
+<body>
+<canvas id="glitter"></canvas>
+
+<div class="page">
+<main>
+  <div class="hero">
+    <div class="balloon">📸</div>
+    <h1 class="foil">Scatta un ricordo</h1>
+    <p>Da sola o con Sara: carica una foto simpatica della serata, apparirà tra poco sul maxischermo ✨</p>
+  </div>
+
+  <!-- SCATTO / SCELTA -->
+  <section class="card shot-card" id="pickCard">
+    <input type="file" id="fileInput" accept="image/*" capture="environment" hidden>
+    <button class="btn" id="pickBtn">Scatta o scegli una foto 📷</button>
+
+    <div class="preview-wrap" id="preview" hidden>
+      <img id="previewImg" alt="Anteprima della foto">
+      <div class="preview-actions">
+        <button class="btn ghost" id="retakeBtn">Cambia foto</button>
+        <button class="btn gold" id="uploadBtn">Carica ✨</button>
+      </div>
+    </div>
+    <p class="status-msg" id="statusMsg"></p>
+  </section>
+
+  <!-- FATTO -->
+  <section class="card shot-card hidden-card" id="doneCard">
+    <div class="done-icon">🎉</div>
+    <h1 class="foil" style="font-size:1.6rem;">Foto caricata!</h1>
+    <p>Grazie! Apparirà a breve nel loop sul maxischermo, e resterà come ricordo della serata.</p>
+    <button class="btn" id="anotherBtn">Scatta un'altra foto 📷</button>
+  </section>
+</main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="cloudinary-config.js"></script>
+<script src="sparkles.js"></script>
+<script>if (window.initGlitter) initGlitter("glitter");</script>
+<script src="capture.js"></script>
+</body>
+</html>

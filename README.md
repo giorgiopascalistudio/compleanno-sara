@@ -1,11 +1,16 @@
 # 🎂✨ Quiz di compleanno — "Quanto conosci Sara?"
 
-Gioco live per il compleanno: gli invitati inquadrano un QR code dal telefono,
-inseriscono il loro nome ed entrano in un quiz di 30 domande su Sara, una alla
-volta. Quando l'host avvia il gioco parte per tutti un **timer di 10 minuti**;
-alla fine la pagina "regia" (da collegare al proiettore) mostra la
-**classifica generale** in tempo reale, con podio e coriandoli per il/la
-vincitore/trice.
+Sito per la festa di compleanno, con due funzioni:
+
+- **Foto ricordo**: per tutta la serata il maxischermo mostra in loop le foto
+  che gli invitati scattano e caricano dal telefono (da soli o con Sara),
+  inquadrando un piccolo QR sempre visibile in alto a sinistra.
+- **Quiz live**: quando l'host lo decide, un'iconcina discreta rivela la
+  schermata del quiz — gli invitati inquadrano un altro QR, inseriscono il
+  loro nome ed entrano in un quiz di 30 domande su Sara, una alla volta.
+  Parte per tutti un **timer di 10 minuti**; alla fine (o prima, se tutti
+  hanno già finito) il maxischermo mostra la **classifica generale** con
+  podio e coriandoli, poi si torna alle foto.
 
 Tema grafico **oro & argento**, con pioggia di glitter animata sullo sfondo e
 titoli in "lamina metallica" che scintilla.
@@ -14,18 +19,22 @@ titoli in "lamina metallica" che scintilla.
 
 | File | A cosa serve |
 |---|---|
-| `index.html` + `admin.js` | **Pagina principale** — la "regia": QR code, pulsante di avvio, timer e classifica live. È quella da aprire sul portatile collegato al proiettore. |
-| `gioco.html` + `player.js` | Pagina che gli invitati aprono dal telefono — non si apre a mano, ci si arriva inquadrando il QR mostrato dalla regia. |
+| `index.html` + `admin.js` | **Pagina principale** — la "regia": foto in loop, QR del quiz, avvio, timer e classifica live. È quella da aprire sul portatile collegato al proiettore. |
+| `gioco.html` + `player.js` | Pagina del quiz che gli invitati aprono dal telefono — non si apre a mano, ci si arriva inquadrando il QR del quiz mostrato dalla regia. |
+| `foto.html` + `capture.js` | Pagina per scattare/caricare una foto ricordo — ci si arriva inquadrando il QR piccolo sempre visibile in alto a sinistra sulla regia. |
+| `photos.js` | Lo slideshow delle foto sulla regia (dissolvenza, 3s a foto, loop) |
 | `quiz-data.js` | Le 30 domande e le risposte accettate (con varianti, maiuscole/minuscole e accenti ignorati) |
 | `style.css` | Stile condiviso (palette oro/argento, animazioni) |
-| `sparkles.js` | La pioggia di glitter animata sullo sfondo (canvas leggero, si disattiva da solo se il dispositivo ha "riduci animazioni" attivo) |
-| `fullscreen.js` | Richiesta di schermo intero al primo tocco/click |
-| `firebase-config.js` | **Da compilare** con i dati del tuo progetto Firebase (vedi sotto) |
+| `sparkles.js` | La pioggia di glitter animata sullo sfondo |
+| `fullscreen.js` | Richiesta di schermo intero al primo "Inizia il gioco" |
+| `firebase-config.js` | **Da compilare** — dati del progetto Firebase (elenco foto + dati del quiz, vedi sotto) |
+| `cloudinary-config.js` | **Da compilare** — dati dell'account Cloudinary (dove vengono caricate le foto, vedi sotto) |
 
-Il sito è puramente statico (nessun server da installare): la sincronizzazione
-in tempo reale tra i telefoni degli invitati e il proiettore è affidata a
-**Firebase Realtime Database** (gratuito, nessuna carta di credito richiesta
-per l'uso previsto qui).
+Il sito è puramente statico (nessun server da installare). La sincronizzazione
+in tempo reale (giocatori, risposte, elenco foto) usa **Firebase Realtime
+Database**; le foto vere e proprie sono ospitate su **Cloudinary**. Entrambi
+sono gratuiti per l'uso previsto qui e **non richiedono una carta di
+credito**.
 
 ## 1. Crea il progetto Firebase (~5 minuti, gratis)
 
@@ -37,7 +46,7 @@ per l'uso previsto qui).
    Dai un nickname (es. `quiz-sara-web`) e clicca **Registra app**. *Non*
    serve Firebase Hosting.
 4. Firebase mostra un blocco `firebaseConfig = { apiKey: "...", ... }`:
-   copia questi valori, ti serviranno al punto 2 più sotto.
+   copia questi valori, ti serviranno al punto 3 più sotto.
 5. Nel menu a sinistra apri **Compilazione → Realtime Database** →
    **Crea database** → scegli una località (es. `europe-west1`) → avvia in
    **modalità test**.
@@ -63,10 +72,25 @@ per l'uso previsto qui).
    eliminare il progetto Firebase (o di rimettere le regole di default) per
    non lasciare il database aperto a tempo indeterminato.
 
-## 2. Compila `firebase-config.js`
+## 2. Crea l'account Cloudinary per le foto (~3 minuti, gratis)
 
-Apri `firebase-config.js` e incolla i valori copiati al punto 4 sopra, ad
-esempio:
+1. Vai su <https://cloudinary.com/users/register/free> e registrati
+   (basta un'email, **nessuna carta di credito richiesta**).
+2. Nella **Dashboard** copia il **Cloud name** (in alto).
+3. Vai su ⚙️ **Settings → Upload** → sezione **Upload presets** →
+   **Add upload preset**.
+4. Imposta **Signing Mode** su **Unsigned** (permette agli invitati di
+   caricare foto senza dover fare login) → **Save**, e copia il nome del
+   preset (es. `ml_default` o quello che gli dai tu).
+
+Le foto caricate restano nella tua libreria Cloudinary anche dopo la festa:
+puoi rivederle, scaricarle una per una o in blocco in qualsiasi momento dal
+menu **Media Library** della dashboard — è lì che restano i ricordi.
+
+## 3. Compila i file di configurazione
+
+Apri `firebase-config.js` e incolla i valori copiati al punto 4 della
+sezione Firebase, ad esempio:
 
 ```js
 const FIREBASE_CONFIG = {
@@ -83,7 +107,16 @@ const FIREBASE_CONFIG = {
 `databaseURL` è visibile nella scheda **Realtime Database** della console
 Firebase (in alto, sopra ai tuoi dati).
 
-## 3. Pubblica il sito (GitHub Pages)
+Apri poi `cloudinary-config.js` e incolla cloud name e nome del preset:
+
+```js
+const CLOUDINARY_CONFIG = {
+  cloudName: "il-tuo-cloud-name",
+  uploadPreset: "il-tuo-preset",
+};
+```
+
+## 4. Pubblica il sito (GitHub Pages)
 
 In questa repository: **Settings → Pages → Build and deployment → Deploy
 from a branch** → branch `main`, cartella `/ (root)` → **Save**. Dopo la
@@ -91,43 +124,51 @@ pubblicazione (1-2 minuti) le pagine saranno disponibili a:
 
 - **Pagina regia (il link principale, da collegare al proiettore):**
   `https://<tuo-utente>.github.io/compleanno-sara/`
-- **Pagina invitati:** non serve aprirla a mano — la regia mostra il suo QR
-  code (punta a `https://<tuo-utente>.github.io/compleanno-sara/gioco.html`)
+- **Pagina foto e pagina quiz:** non servono aperte a mano — la regia
+  mostra da sola i rispettivi QR code.
 
-Committa e pusha `firebase-config.js` compilato: le chiavi di un progetto
-web Firebase **non sono segrete** (sono normalmente visibili nel codice di
-qualsiasi sito che usa Firebase) — la sicurezza è affidata alle *regole* del
-database impostate al punto 1, non al nascondere questi valori.
+Committa e pusha i due file di configurazione compilati: le chiavi di un
+progetto web Firebase e il cloud name/preset Cloudinary **non sono segreti**
+(sono normalmente visibili nel codice di qualsiasi sito che li usa) — la
+sicurezza è affidata alle *regole*/impostazioni configurate sopra, non al
+nascondere questi valori.
 
-## 4. Prova prima della festa
+## 5. Prova prima della festa
 
 1. Apri la pagina principale (`index.html` / la regia) sul portatile che
-   collegherai al proiettore.
-2. Dal tuo telefono (o da un altro dispositivo) inquadra il QR mostrato lì
-   — oppure apri `gioco.html` a mano per una prova — inserisci un nome di
-   prova ed entra.
-3. Sulla regia premi **"Inizia il gioco"**: sul telefono di prova dovrebbe
+   collegherai al proiettore: di default mostra la schermata foto.
+2. Dal tuo telefono inquadra il QR piccolo in alto a sinistra, scatta una
+   foto di prova e caricala: dovrebbe comparire in loop sulla regia entro
+   qualche secondo.
+3. In basso a destra sulla regia c'è un'iconcina 🎮 poco visibile: premila
+   per rivelare la schermata del quiz (QR + conteggio + "Inizia il gioco").
+4. Dal telefono inquadra questo secondo QR (o apri `gioco.html` a mano),
+   inserisci un nome di prova ed entra.
+5. Sulla regia premi **"Inizia il gioco"**: sul telefono di prova dovrebbe
    apparire subito la prima domanda con il countdown.
-4. Rispondi (premi "Avanti" per passare alla successiva, "Indietro" per
+6. Rispondi (premi "Avanti" per passare alla successiva, "Indietro" per
    tornare a modificare una risposta già data) fino all'ultima domanda dove
-   "Avanti" diventa **"Invia le risposte"** — controlla che il nome compaia
-   nella classifica live e poi nel podio finale sulla regia.
-5. Premi **"↺ Nuova partita"** sulla regia per azzerare tutto prima
-   dell'arrivo degli invitati (cancella tutti i giocatori e i punteggi).
+   "Avanti" diventa **"Invia le risposte"**. Il punteggio resta nascosto sul
+   telefono finché il tempo non scade — puoi anche premere sulla regia
+   **"🏁 Tutti hanno finito — mostra la classifica"** per non aspettare i 10
+   minuti. Controlla che il nome compaia nel podio finale.
+7. Premi **"📸 Torna alle foto"** (o l'icona **↺** in alto) per tornare alla
+   schermata foto e azzerare i dati del quiz prima dell'arrivo degli
+   invitati.
 
-## 5. Il giorno della festa
+## 6. Il giorno della festa
 
-1. Collega il portatile al proiettore e apri la pagina principale (la
-   regia) — è il link da tenere a portata di mano, gli invitati non lo
-   toccano mai: entrano solo inquadrando il QR che la regia mostra.
-2. Premi ⛶ in alto per mettere la regia a schermo intero (o lascia che
-   parta da sola al primo "Inizia il gioco").
-3. Lascia entrare gli invitati (il numero di "invitati pronti" sale in
-   tempo reale mentre scansionano il QR).
-4. Premi **"Inizia il gioco"**: partono contemporaneamente il quiz su tutti
-   i telefoni e il countdown sul proiettore.
-5. Dopo 10 minuti (o se il tempo scade prima) il proiettore mostra
-   automaticamente il podio con i coriandoli.
+1. Collega il portatile al proiettore, apri la pagina principale (la regia)
+   e mettila a schermo intero dal browser (F11 o equivalente).
+2. Lascia che gli invitati scattino e carichino foto per tutta la serata,
+   inquadrando il QR in alto a sinistra — appariranno in loop da sole.
+3. Quando vuoi fare il quiz, premi l'iconcina 🎮 in basso a destra: compare
+   il QR del quiz. Lascia entrare gli invitati (il conteggio sale in tempo
+   reale), poi premi **"Inizia il gioco"**.
+4. Dopo 10 minuti (o prima, con **"Tutti hanno finito"**) il proiettore
+   mostra il podio con i coriandoli.
+5. Premi **"📸 Torna alle foto"** per tornare alla modalità foto per il
+   resto della serata — puoi ripetere il quiz quante volte vuoi.
 
 ## Personalizzare
 
@@ -138,13 +179,17 @@ database impostate al punto 1, non al nascondere questi valori.
   se l'ospite scrive una qualunque di quelle parole/frasi (senza contare
   maiuscole, minuscole, accenti o punteggiatura) la risposta è corretta —
   aggiungine quante ne vuoi per accettare più varianti.
+- **Tempo di visione di ogni foto:** cambia `HOLD_MS` (e `OUT_MS` per la
+  dissolvenza in uscita) all'inizio di `photos.js` — di default 3000ms.
 - **Colori/font:** i colori sono definiti come variabili CSS all'inizio di
   `style.css` (`--gold-1`, `--gold-2`, `--silver-1`, `--silver-2`, ...).
-- **Densità/velocità del glitter:** in `index.html`/`gioco.html` la riga
-  `initGlitter("glitter", { density: ... })` controlla quante particelle
-  disegnare; velocità di caduta e sfarfallio sono in `sparkles.js`. Il
-  glitter si disattiva da solo se il dispositivo ha l'opzione "riduci
-  animazioni" attiva.
+- **Densità/velocità del glitter:** in `index.html`/`gioco.html`/`foto.html`
+  la riga `initGlitter("glitter", { density: ... })` controlla quante
+  particelle disegnare; velocità di caduta e sfarfallio sono in
+  `sparkles.js`.
+- **Le foto NON vengono cancellate** da "Nuova partita" / "Torna alle
+  foto" (solo giocatori e punteggi del quiz): restano per tutta la festa,
+  e su Cloudinary anche dopo.
 - **Più partite con lo stesso progetto Firebase:** cambia `GAME_ID` in
-  `firebase-config.js` per isolare i dati di una nuova partita senza
-  toccare quelli vecchi.
+  `firebase-config.js` per isolare i dati di una nuova festa senza
+  toccare quelli vecchi (foto comprese).

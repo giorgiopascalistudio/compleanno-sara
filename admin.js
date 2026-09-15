@@ -27,6 +27,7 @@
   // pagina invitati = "gioco.html" nella stessa cartella di questa pagina,
   // qualunque sia il nome/percorso con cui questa (la regia) è servita.
   const joinUrl = location.href.replace(/[^/]*$/, "") + "gioco.html";
+  const photoUrl = location.href.replace(/[^/]*$/, "") + "foto.html";
   try {
     // eslint-disable-next-line no-undef
     new QRCode(document.getElementById("qrBox"), {
@@ -35,10 +36,25 @@
       height: 230,
       correctLevel: QRCode.CorrectLevel.H,
     });
+    new QRCode(document.getElementById("photoQrBox"), {
+      text: photoUrl,
+      width: 92,
+      height: 92,
+      correctLevel: QRCode.CorrectLevel.H,
+    });
   } catch (e) { /* libreria QR non caricata: link testuale resta visibile */ }
+
+  // slideshow delle foto ricordo — è la schermata "di riposo" quando non
+  // c'è nessun quiz in corso (vedi render()). Avvolto in try/catch: se per
+  // qualunque motivo fallisse, non deve bloccare il resto della regia.
+  let photoSlideshow = { start() {}, stop() {} };
+  try {
+    if (window.initPhotoSlideshow) photoSlideshow = window.initPhotoSlideshow(db, base);
+  } catch (e) { console.error("Errore nello slideshow foto:", e); }
 
   // --- schermate ---
   const screens = {
+    photos: document.getElementById("screen-photos"),
     pre: document.getElementById("screen-pre"),
     live: document.getElementById("screen-live"),
     final: document.getElementById("screen-final"),
@@ -46,6 +62,12 @@
   function showScreen(name) {
     Object.entries(screens).forEach(([k, el]) => el.classList.toggle("active", k === name));
   }
+  // Le foto sono la schermata di default per tutta la serata: si passa al
+  // quiz solo premendo l'iconcina discreta, e si torna alle foto con
+  // "Nuova partita" o "Torna alle foto". Non è sincronizzato su Firebase:
+  // riguarda solo cosa mostra QUESTO schermo, non lo stato del gioco.
+  let showQuizPre = false;
+  let lastScreenName = null;
 
   let players = {};
   let currentGame = { state: "waiting", durationMs: DEFAULT_DURATION };
@@ -88,6 +110,7 @@
       .map((p) => '<span class="name-chip">' + escapeHtml(p.name || "Ospite") + "</span>")
       .join("");
 
+    let target;
     if (currentGame.state === "running") {
       const dur = currentGame.durationMs || DEFAULT_DURATION;
       const remaining = (currentGame.startedAt || serverNow()) + dur - serverNow();
@@ -95,16 +118,28 @@
         endGame();
         return;
       }
-      showScreen("live");
+      target = "live";
+    } else if (currentGame.state === "ended") {
+      target = "final";
+    } else {
+      target = showQuizPre ? "pre" : "photos";
+    }
+
+    // avvia/ferma lo slideshow solo quando si entra o si esce dalla
+    // schermata foto, non ad ogni singolo aggiornamento di Firebase
+    if (target !== lastScreenName) {
+      if (lastScreenName === "photos") photoSlideshow.stop();
+      if (target === "photos") photoSlideshow.start();
+      lastScreenName = target;
+    }
+    showScreen(target);
+
+    if (target === "live") {
       renderBoard();
       startTimer();
-    } else if (currentGame.state === "ended") {
-      stopTimer();
-      showScreen("final");
-      renderFinal();
     } else {
       stopTimer();
-      showScreen("pre");
+      if (target === "final") renderFinal();
     }
   }
 
@@ -259,10 +294,28 @@
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", () => {
+      showQuizPre = false;
       playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
       gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
         .catch((e) => console.error("Errore nel reimpostare la partita:", e));
     });
+  });
+
+  // iconcina discreta sulla schermata foto: rivela la schermata del quiz
+  // (QR + conteggio + "Inizia il gioco"), senza avviarlo subito
+  document.getElementById("quizToggleBtn").addEventListener("click", () => {
+    showQuizPre = true;
+    render();
+  });
+
+  // dal podio finale, si torna alla schermata foto per il resto della
+  // serata (equivale a "Nuova partita" ma senza dover confermare, dato
+  // che a questo punto la partita è già stata vista fino in fondo)
+  document.getElementById("backToPhotosBtn").addEventListener("click", () => {
+    showQuizPre = false;
+    playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
+    gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
+      .catch((e) => console.error("Errore nel reimpostare la partita:", e));
   });
 
   function escapeHtml(s) {
