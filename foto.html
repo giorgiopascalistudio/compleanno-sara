@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Foto Sara">
 <title>Scatta un ricordo — Compleanno di Sara</title>
 <meta name="description" content="Scatta o carica una foto ricordo della festa: apparirà sul maxischermo!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,7 +34,8 @@
   #pickBtn { width: 100%; }
 
   .preview-wrap { margin-top: 20px; }
-  .preview-wrap img {
+  .preview-wrap img,
+  .preview-wrap video {
     width: 100%;
     max-height: 50vh;
     object-fit: contain;
@@ -48,6 +50,32 @@
 
   .done-icon { font-size: 3rem; margin-bottom: 6px; }
   .done-card p { color: var(--text-dim); line-height: 1.55; margin: 10px 0 22px; }
+
+  /* --- banner "aggiungi a Home", mostrato una volta sola --- */
+  .install-banner {
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .install-banner[hidden] { display: none; }
+  .install-banner .ico { font-size: 1.4rem; flex: none; line-height: 1; }
+  .install-banner .txt { flex: 1; }
+  .install-banner .txt b { color: var(--text); }
+  .install-banner p { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text-dim); }
+  .install-banner .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .install-banner .close-btn {
+    flex: none;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .install-banner .install-cta[hidden] { display: none; }
+  .install-banner .install-cta { margin-top: 10px; padding: 9px 16px; font-size: 0.85rem; }
 </style>
 </head>
 <body>
@@ -55,21 +83,33 @@
 
 <div class="page">
 <main>
+  <div class="card install-banner" id="installBanner" hidden>
+    <div class="ico">📲</div>
+    <div class="txt">
+      <div class="row">
+        <p id="installText"><b>Consiglio:</b> aggiungi questa pagina alla schermata Home per riaprirla in un tap per tutta la serata, senza dover reinquadrare il QR ogni volta.</p>
+        <button class="close-btn" id="installClose" title="Chiudi" aria-label="Chiudi">✕</button>
+      </div>
+      <button class="btn gold install-cta" id="installCta" hidden>Installa 📲</button>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="balloon">📸</div>
     <h1 class="foil">Scatta un ricordo</h1>
-    <p>Da sola o con Sara: carica una foto simpatica della serata, apparirà tra poco sul maxischermo ✨</p>
+    <p>Da sola o con Sara: carica una foto o un breve video (max 15 secondi) della serata, apparirà tra poco sul maxischermo ✨</p>
   </div>
 
   <!-- SCATTO / SCELTA -->
   <section class="card shot-card" id="pickCard">
-    <input type="file" id="fileInput" accept="image/*" capture="environment" hidden>
-    <button class="btn" id="pickBtn">Scatta o scegli una foto 📷</button>
+    <input type="file" id="fileInput" accept="image/*,video/*" capture="environment" hidden>
+    <button class="btn" id="pickBtn">Scatta o scegli 📷</button>
 
     <div class="preview-wrap" id="preview" hidden>
-      <img id="previewImg" alt="Anteprima della foto">
+      <img id="previewImg" alt="Anteprima della foto" hidden>
+      <video id="previewVideo" controls playsinline hidden></video>
       <div class="preview-actions">
-        <button class="btn ghost" id="retakeBtn">Cambia foto</button>
+        <button class="btn ghost" id="retakeBtn">Cambia</button>
         <button class="btn gold" id="uploadBtn">Carica ✨</button>
       </div>
     </div>
@@ -79,9 +119,9 @@
   <!-- FATTO -->
   <section class="card shot-card hidden-card" id="doneCard">
     <div class="done-icon">🎉</div>
-    <h1 class="foil" style="font-size:1.6rem;">Foto caricata!</h1>
+    <h1 class="foil" style="font-size:1.6rem;">Caricato!</h1>
     <p>Grazie! Apparirà a breve nel loop sul maxischermo, e resterà come ricordo della serata.</p>
-    <button class="btn" id="anotherBtn">Scatta un'altra foto 📷</button>
+    <button class="btn" id="anotherBtn">Aggiungi un altro ricordo 📷</button>
   </section>
 </main>
 </div>
