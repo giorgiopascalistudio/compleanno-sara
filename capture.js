@@ -1,15 +1,20 @@
 /* ============================================================
    Quiz di compleanno — logica pagina foto (foto.html)
-   Ridimensiona le immagini nel browser, controlla la durata dei
-   video (max 15s), carica tutto su Cloudinary (hosting gratuito,
-   upload diretto senza server) e ne salva il link nel database del
-   gioco, così la regia può mostrarlo in loop.
+   Chiede nome e cognome una sola volta per telefono (localStorage,
+   diverso da gioco.html che invece riparte sempre da zero), passa
+   automaticamente alla schermata "partecipa al gioco" quando la
+   regia avvia il quiz, ridimensiona le immagini nel browser, controlla
+   la durata dei video (max 15s), carica tutto su Cloudinary (hosting
+   gratuito, upload diretto senza server) e ne salva il link — insieme
+   a didascalia e nome di chi l'ha caricato — nel database del gioco,
+   così la regia può mostrarlo in loop.
    ============================================================ */
 
 (function () {
   "use strict";
 
   const MAX_VIDEO_SECONDS = 15.5; // un po' di tolleranza sull'arrotondamento
+  const NAME_KEY = "guestName_v1";
 
   // Nota: "CLOUDINARY_CONFIG" (dichiarato con `const` in cloudinary-config.js)
   // NON diventa una proprietà di `window`, a differenza di "firebase" (che lo
@@ -31,11 +36,55 @@
   const db = firebase.database();
   const base = "games/" + GAME_ID;
 
+  // --- schermate: nome / partecipa al gioco / scatta-carica ---
+  const screens = {
+    name: document.getElementById("screen-name"),
+    joingame: document.getElementById("screen-joingame"),
+    capture: document.getElementById("screen-capture"),
+  };
+  function showScreen(name) {
+    Object.entries(screens).forEach(([k, el]) => el.classList.toggle("active", k === name));
+  }
+
+  let guestName = (localStorage.getItem(NAME_KEY) || "").trim();
+  let gameIsRunning = false;
+  const joinGameLink = document.getElementById("joinGameLink");
+
+  function refreshJoinLink() {
+    if (joinGameLink) joinGameLink.href = "gioco.html?name=" + encodeURIComponent(guestName);
+  }
+
+  function updateVisibleScreen() {
+    if (!guestName) { showScreen("name"); return; }
+    refreshJoinLink();
+    showScreen(gameIsRunning ? "joingame" : "capture");
+  }
+  updateVisibleScreen();
+
+  document.getElementById("nameGateForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const val = document.getElementById("guestNameInput").value.trim();
+    if (!val) return;
+    guestName = val.slice(0, 40);
+    localStorage.setItem(NAME_KEY, guestName);
+    updateVisibleScreen();
+  });
+
+  // Se chi ha già inquadrato questo QR è ancora sulla pagina quando la
+  // regia avvia il quiz, la pagina si aggiorna da sola sulla schermata
+  // "partecipa al gioco" (senza bisogno di reinquadrare nulla).
+  db.ref(base + "/game").on("value", (snap) => {
+    const g = snap.val();
+    gameIsRunning = !!(g && g.state === "running");
+    updateVisibleScreen();
+  });
+
   const fileInput = document.getElementById("fileInput");
   const pickBtn = document.getElementById("pickBtn");
   const preview = document.getElementById("preview");
   const previewImg = document.getElementById("previewImg");
   const previewVideo = document.getElementById("previewVideo");
+  const captionInput = document.getElementById("captionInput");
   const uploadBtn = document.getElementById("uploadBtn");
   const retakeBtn = document.getElementById("retakeBtn");
   const statusMsg = document.getElementById("statusMsg");
@@ -115,6 +164,7 @@
     selectedType = null;
     preview.hidden = true;
     previewVideo.pause();
+    captionInput.value = "";
     statusMsg.textContent = "";
   });
 
@@ -175,6 +225,8 @@
           url: data.secure_url,
           type: selectedType,
           uploadedAt: firebase.database.ServerValue.TIMESTAMP,
+          caption: captionInput.value.trim().slice(0, 80) || null,
+          name: guestName || "Ospite",
         });
       })
       .then(() => {
@@ -196,6 +248,7 @@
     selectedBlob = null;
     selectedType = null;
     fileInput.value = "";
+    captionInput.value = "";
     statusMsg.textContent = "";
     uploadBtn.disabled = false;
     retakeBtn.disabled = false;

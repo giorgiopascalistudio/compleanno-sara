@@ -13,7 +13,7 @@
   const HOLD_MS = 3000; // tempo di visione di una foto
   const OUT_MS = 500;
 
-  let items = []; // [{ key, url, type: "image"|"video" }, ...]
+  let items = []; // [{ key, url, type: "image"|"video", caption, name }, ...]
   let idx = 0;
   let cycleTimer = null;
   let running = false;
@@ -24,11 +24,25 @@
     im.src = item.url;
   }
 
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function renderMeta(item) {
+    const meta = document.getElementById("photoMeta");
+    if (!meta) return;
+    const parts = [];
+    if (item.name) parts.push('<div class="who">' + escapeHtml(item.name) + "</div>");
+    if (item.caption) parts.push('<div class="cap">' + escapeHtml(item.caption) + "</div>");
+    meta.innerHTML = parts.join("");
+  }
+
   function showNext() {
     if (!running || !items.length) return;
     const item = items[idx % items.length];
     const img = document.getElementById("photoImg");
     const video = document.getElementById("photoVideo");
+    const meta = document.getElementById("photoMeta");
     if (!img || !video) return;
 
     // ferma l'eventuale video precedente prima di mostrare il prossimo elemento
@@ -36,10 +50,13 @@
     video.onended = null;
     video.classList.remove("photo-in", "photo-out");
     img.classList.remove("photo-in", "photo-out");
+    if (meta) meta.classList.remove("photo-in", "photo-out");
 
     const nextIdx = (idx + 1) % items.length;
     preload(items[nextIdx]);
     idx = nextIdx;
+
+    renderMeta(item);
 
     if (item.type === "video") {
       img.style.display = "none";
@@ -50,11 +67,13 @@
       video.play().catch(() => {}); // riproduzione automatica bloccata su alcuni browser: si vede comunque il fermo immagine
       void video.offsetWidth;
       video.classList.add("photo-in");
+      if (meta) meta.classList.add("photo-in");
       clearTimeout(cycleTimer);
       video.onended = () => {
         if (!running) return;
         video.classList.remove("photo-in");
         video.classList.add("photo-out");
+        if (meta) { meta.classList.remove("photo-in"); meta.classList.add("photo-out"); }
         cycleTimer = setTimeout(showNext, OUT_MS);
       };
     } else {
@@ -64,11 +83,13 @@
       img.dataset.key = item.key;
       void img.offsetWidth; // forza il reflow: l'animazione riparte da capo anche se la classe era già stata rimossa
       img.classList.add("photo-in");
+      if (meta) meta.classList.add("photo-in");
       clearTimeout(cycleTimer);
       cycleTimer = setTimeout(() => {
         if (!running) return;
         img.classList.remove("photo-in");
         img.classList.add("photo-out");
+        if (meta) { meta.classList.remove("photo-in"); meta.classList.add("photo-out"); }
         cycleTimer = setTimeout(showNext, OUT_MS);
       }, HOLD_MS);
     }
@@ -81,7 +102,7 @@
       const list = [];
       snap.forEach((child) => {
         const v = child.val();
-        if (v && v.url) list.push({ key: child.key, url: v.url, type: v.type === "video" ? "video" : "image" });
+        if (v && v.url) list.push({ key: child.key, url: v.url, type: v.type === "video" ? "video" : "image", caption: v.caption || "", name: v.name || "" });
       });
       const hadNone = items.length === 0;
       items = list;
@@ -95,8 +116,10 @@
         clearTimeout(cycleTimer);
         const img = document.getElementById("photoImg");
         const video = document.getElementById("photoVideo");
+        const meta = document.getElementById("photoMeta");
         if (img) { img.classList.remove("photo-in", "photo-out"); img.removeAttribute("src"); }
         if (video) { video.pause(); video.onended = null; video.classList.remove("photo-in", "photo-out"); video.removeAttribute("src"); }
+        if (meta) { meta.classList.remove("photo-in", "photo-out"); meta.innerHTML = ""; }
         return;
       }
       if (running && hadNone) {

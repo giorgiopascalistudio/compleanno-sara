@@ -3,14 +3,21 @@
 Sito per la festa di compleanno, con due funzioni:
 
 - **Foto ricordo**: per tutta la serata il maxischermo mostra in loop le foto
-  che gli invitati scattano e caricano dal telefono (da soli o con Sara),
-  inquadrando un piccolo QR sempre visibile in alto a sinistra.
+  e i video (max 15s) che gli invitati scattano e caricano dal telefono (da
+  soli o con Sara), inquadrando un piccolo QR sempre visibile in alto a
+  sinistra. La prima volta che si inquadra questo QR viene chiesto nome e
+  cognome (una sola volta per telefono): comparirà insieme a un'eventuale
+  didascalia sotto ogni foto/video in proiezione. Se l'host avvia il quiz
+  mentre qualcuno è ancora su questa pagina, la pagina si aggiorna da sola
+  mostrando un invito a partecipare, senza dover reinquadrare nulla.
 - **Quiz live**: quando l'host lo decide, un'iconcina discreta rivela la
-  schermata del quiz — gli invitati inquadrano un altro QR, inseriscono il
-  loro nome ed entrano in un quiz di 30 domande su Sara, una alla volta.
-  Parte per tutti un **timer di 10 minuti**; alla fine (o prima, se tutti
-  hanno già finito) il maxischermo mostra la **classifica generale** con
-  podio e coriandoli, poi si torna alle foto.
+  schermata del quiz — gli invitati inquadrano un altro QR (o toccano
+  "Partecipa ora" dalla pagina foto, se sono già entrati da lì) ed entrano in
+  un quiz di 30 domande su Sara, una alla volta. Parte per tutti un **timer
+  di 10 minuti**; alla fine (o prima, se tutti hanno già finito) il
+  maxischermo mostra la **classifica generale** con podio e coriandoli, poi
+  si torna alle foto. Un pulsante nella regia permette di uscire dal quiz e
+  tornare alle foto in qualunque momento, anche a partita in corso.
 
 Tema grafico **oro & argento**, con pioggia di glitter animata sullo sfondo e
 titoli in "lamina metallica" che scintilla.
@@ -152,9 +159,9 @@ nascondere questi valori.
    telefono finché il tempo non scade — puoi anche premere sulla regia
    **"🏁 Tutti hanno finito — mostra la classifica"** per non aspettare i 10
    minuti. Controlla che il nome compaia nel podio finale.
-7. Premi **"📸 Torna alle foto"** (o l'icona **↺** in alto) per tornare alla
-   schermata foto e azzerare i dati del quiz prima dell'arrivo degli
-   invitati.
+7. Premi l'icona **📸** in alto (o **"📸 Torna alle foto"** a fine partita, o
+   l'icona **↺** per solo azzerare senza uscire) per tornare alla schermata
+   foto e azzerare i dati del quiz prima dell'arrivo degli invitati.
 
 ## 6. Il giorno della festa
 

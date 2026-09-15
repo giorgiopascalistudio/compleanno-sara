@@ -276,6 +276,31 @@
   .photo-frame video.photo-out { animation: photoOut 0.5s ease-in both; }
   @keyframes photoIn { from { opacity: 0; transform: scale(1.045); } to { opacity: 1; transform: scale(1); } }
   @keyframes photoOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.975); } }
+  /* didascalia + nome di chi ha caricato la foto/video, in dissolvenza
+     sincronizzata con la foto/video stessa */
+  .photo-meta {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    z-index: 2;
+    max-width: 82%;
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: rgba(19, 12, 4, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .photo-meta:empty { display: none; }
+  .photo-meta.photo-in { animation: metaIn 0.6s ease-out both; }
+  .photo-meta.photo-out { animation: metaOut 0.5s ease-in both; }
+  @keyframes metaIn { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes metaOut { from { opacity: 1; } to { opacity: 0; } }
+  .photo-meta .who { font-family: "Playfair Display", serif; font-weight: 700; color: var(--gold-1); font-size: 0.95rem; }
+  .photo-meta .cap { color: var(--text-dim); font-size: 0.85rem; margin-top: 2px; }
+
   .photo-empty[hidden] { display: none; }
   .photo-empty {
     position: absolute;
@@ -350,6 +375,7 @@
 <div class="page">
 <div class="stage">
   <div class="controls">
+    <button class="btn ghost icon-btn" id="exitToPhotosBtn" title="Esci e torna alle foto" aria-label="Esci e torna alle foto">📸</button>
     <button class="btn ghost icon-btn" id="resetBtn" title="Nuova partita" aria-label="Nuova partita">↺</button>
   </div>
   <div class="brand">
@@ -370,6 +396,7 @@
       <div class="photo-frame">
         <img id="photoImg" alt="">
         <video id="photoVideo" muted playsinline></video>
+        <div class="photo-meta" id="photoMeta"></div>
         <div class="photo-empty" id="photoEmpty">Le foto e i video ricordo della serata<br>appariranno qui ✨<br>Inquadra il QR per aggiungerne uno!</div>
         <button class="btn ghost icon-btn delete-photo-btn" id="deletePhotoBtn" title="Togli questa foto dal loop" aria-label="Togli questa foto dal loop" hidden>🗑️</button>
       </div>

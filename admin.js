@@ -323,6 +323,22 @@
       .catch((e) => console.error("Errore nel reimpostare la partita:", e));
   });
 
+  // pulsante nei controlli: esce dal gioco (in qualunque momento, anche a
+  // partita in corso) e torna subito alla sezione foto/video
+  document.getElementById("exitToPhotosBtn").addEventListener("click", () => {
+    const doExit = () => {
+      showQuizPre = false;
+      playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
+      gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
+        .catch((e) => console.error("Errore nel reimpostare la partita:", e));
+    };
+    if (currentGame.state === "running") {
+      askConfirm("La partita è in corso: uscire ora la termina per tutti e cancella i punteggi. Tornare alle foto?", doExit);
+    } else {
+      askConfirm("Tornare alla sezione foto/video?", doExit);
+    }
+  });
+
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }

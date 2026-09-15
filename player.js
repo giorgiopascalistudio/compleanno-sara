@@ -375,6 +375,19 @@
     return escapeHtml(s);
   }
 
-  // --- avvio: si parte sempre dal modulo nome ---
-  showScreen("join");
+  // --- avvio ---
+  // Se si arriva da foto.html dopo aver già dato nome e cognome lì (link
+  // "Partecipa ora" con "?name=..."), ci si unisce subito con quel nome
+  // invece di dover ricompilare il modulo. Nessuna persistenza aggiunta:
+  // il nome arriva dal link appena usato, non da un salvataggio locale —
+  // ogni volta che si inquadra IL QR DEL GIOCO da zero si riparte comunque
+  // dal modulo, come richiesto.
+  const prefillName = new URLSearchParams(location.search).get("name");
+  if (prefillName && prefillName.trim()) {
+    document.getElementById("joinBtn").disabled = true;
+    joinAsPlayer(prefillName.trim().slice(0, 30));
+    afterIdentityKnown();
+  } else {
+    showScreen("join");
+  }
 })();
