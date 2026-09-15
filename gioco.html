@@ -6,12 +6,18 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- questa pagina può restare aperta a lungo in attesa che l'host avvii
+     il gioco: senza questi header il telefono può continuare a mostrare
+     una versione vecchia della pagina anche dopo un aggiornamento -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Quiz di Compleanno — Quanto conosci Sara?</title>
 <meta name="description" content="Gioco live per il compleanno di Sara: rispondi al quiz in 10 minuti e scala la classifica!">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
 <style>
   html, body {
     height: 100%;
@@ -312,11 +318,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.4/confetti.browser.js"></script>
-<script src="firebase-config.js"></script>
-<script src="quiz-data.js"></script>
-<script src="sparkles.js"></script>
-<script src="fullscreen.js"></script>
+<script src="firebase-config.js?v=2"></script>
+<script src="quiz-data.js?v=2"></script>
+<script src="sparkles.js?v=2"></script>
+<script src="fullscreen.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="player.js"></script>
+<script src="player.js?v=2"></script>
 </body>
 </html>
