@@ -12,7 +12,11 @@
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Nota: qui NON si rispetta "prefers-reduced-motion" — è un effetto
+    // decorativo di sottofondo richiesto esplicitamente per la festa, non
+    // un elemento funzionale. Su molti PC (soprattutto in VM/desktop
+    // remoti) questa preferenza di sistema è attiva di default e fermerebbe
+    // del tutto l'animazione a un unico fotogramma statico.
     const density = (opts && opts.density) || 0.00009; // particelle per px^2
     let W, H, dpr;
     let particles = [];
@@ -117,7 +121,7 @@
         }
       }
       ctx.globalAlpha = 1;
-      if (!reduceMotion) requestAnimationFrame(frame);
+      requestAnimationFrame(frame);
     }
 
     window.addEventListener("resize", onViewportChange);
@@ -125,11 +129,7 @@
     document.addEventListener("webkitfullscreenchange", onViewportChange);
     document.addEventListener("msfullscreenchange", onViewportChange);
     resize();
-    if (reduceMotion) {
-      frame(0); // un solo frame statico, niente loop
-    } else {
-      requestAnimationFrame(frame);
-    }
+    requestAnimationFrame(frame);
   }
 
   window.initGlitter = initGlitter;
