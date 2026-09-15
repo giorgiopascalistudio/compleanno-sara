@@ -215,6 +215,27 @@
 
   .rest-list { width: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
   .empty-note { color: var(--text-dim); text-align: center; padding: 30px 0; }
+
+  /* --- conferma interna alla pagina, al posto del confirm() del browser:
+     su alcuni browser, dopo un paio di finestre di dialogo native, l'utente
+     può disattivarle del tutto per la pagina ("impedisci altre finestre..."),
+     e da quel momento confirm() si rifiuta in silenzio senza fare nulla. --- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(7, 5, 2, 0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: fadeIn 0.2s ease both;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal-box { max-width: 420px; padding: 28px 26px; text-align: center; }
+  .modal-box p { color: var(--text); line-height: 1.55; margin: 0 0 22px; font-size: 1rem; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions .btn { flex: 1; }
 </style>
 </head>
 <body>
@@ -266,6 +287,16 @@
     <div class="rest-list" id="restList"></div>
   </section>
 </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="card modal-box">
+    <p id="modalMsg"></p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel">Annulla</button>
+      <button class="btn" id="modalConfirm">Conferma</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>

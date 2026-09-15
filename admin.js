@@ -200,36 +200,69 @@
   function endGame() {
     if (endWriteAttempted) return;
     endWriteAttempted = true;
-    gameRef.update({ state: "ended" });
+    gameRef.update({ state: "ended" }).catch((e) => console.error("Errore nel terminare la partita:", e));
+  }
+
+  // Conferma dentro la pagina, al posto di window.confirm(): su alcuni
+  // browser, dopo un paio di finestre di dialogo native, compare la spunta
+  // "impedisci ad altre pagine di creare finestre di dialogo" — da quel
+  // momento in poi confirm() si rifiuta SEMPRE in silenzio, senza errori,
+  // e ogni pulsante che lo usa smette di funzionare senza spiegazione.
+  const modalOverlay = document.getElementById("modalOverlay");
+  const modalMsg = document.getElementById("modalMsg");
+  const modalConfirm = document.getElementById("modalConfirm");
+  const modalCancel = document.getElementById("modalCancel");
+  function askConfirm(message, onYes) {
+    modalMsg.textContent = message;
+    modalOverlay.hidden = false;
+    function onConfirmClick() { cleanup(); onYes(); }
+    function onCancelClick() { cleanup(); }
+    function onOverlayClick(e) { if (e.target === modalOverlay) onCancelClick(); }
+    function cleanup() {
+      modalOverlay.hidden = true;
+      modalConfirm.removeEventListener("click", onConfirmClick);
+      modalCancel.removeEventListener("click", onCancelClick);
+      modalOverlay.removeEventListener("click", onOverlayClick);
+    }
+    modalConfirm.addEventListener("click", onConfirmClick);
+    modalCancel.addEventListener("click", onCancelClick);
+    modalOverlay.addEventListener("click", onOverlayClick);
   }
 
   document.getElementById("startBtn").addEventListener("click", () => {
-    // la richiesta di schermo intero deve essere la primissima cosa del gestore:
-    // un confirm() prima "consuma" il gesto dell'utente e i browser rifiutano
-    // poi la richiesta di fullscreen.
+    // la richiesta di schermo intero deve essere la primissima cosa del gestore
     if (window.tryFullscreen) window.tryFullscreen();
     const count = Object.keys(players).length;
-    if (count === 0 && !confirm("Nessun invitato è ancora entrato. Avviare comunque il gioco?")) return;
-    gameRef.set({
-      state: "running",
-      startedAt: firebase.database.ServerValue.TIMESTAMP,
-      durationMs: DEFAULT_DURATION,
-    });
+    const go = () => {
+      gameRef.set({
+        state: "running",
+        startedAt: firebase.database.ServerValue.TIMESTAMP,
+        durationMs: DEFAULT_DURATION,
+      }).catch((e) => console.error("Errore nell'avviare la partita:", e));
+    };
+    if (count === 0) {
+      askConfirm("Nessun invitato è ancora entrato. Avviare comunque il gioco?", go);
+    } else {
+      go();
+    }
   });
 
   document.getElementById("endNowBtn").addEventListener("click", () => {
     // per quando tutti gli invitati finiscono prima dello scadere del tempo:
     // chiude subito la partita e passa alla classifica finale, come se il
     // tempo fosse scaduto in questo istante.
-    if (!confirm("Terminare subito la partita e mostrare la classifica?")) return;
-    stopTimer();
-    endGame();
+    askConfirm("Terminare subito la partita e mostrare la classifica?", () => {
+      stopTimer();
+      endGame();
+    });
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => {
-    if (!confirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.")) return;
-    playersRef.remove();
-    gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION });
+    askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", () => {
+      playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
+      gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
+        .catch((e) => console.error("Errore nel reimpostare la partita:", e));
+    });
   });
 
   function escapeHtml(s) {
