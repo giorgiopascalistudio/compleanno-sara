@@ -27,7 +27,6 @@
   // pagina invitati = "gioco.html" nella stessa cartella di questa pagina,
   // qualunque sia il nome/percorso con cui questa (la regia) è servita.
   const joinUrl = location.href.replace(/[^/]*$/, "") + "gioco.html";
-  document.getElementById("joinUrl").textContent = joinUrl;
   try {
     // eslint-disable-next-line no-undef
     new QRCode(document.getElementById("qrBox"), {
@@ -68,7 +67,17 @@
   function rankedPlayers() {
     return Object.entries(players)
       .map(([id, p]) => ({ id, name: p.name || "Ospite", score: p.score || 0, finished: !!p.finishedAt, timeMs: typeof p.timeMs === "number" ? p.timeMs : Infinity }))
+      // punteggio più alto vince; a parità, chi ha consegnato prima (timeMs più basso)
       .sort((a, b) => (b.score - a.score) || (a.timeMs - b.timeMs));
+  }
+
+  // Per la vista "in corso" NON si ordina per punteggio e non lo si mostra:
+  // nessuno deve poter dedurre dalla proiezione chi sta rispondendo meglio
+  // prima che il tempo scada. Si ordina solo per ordine di ingresso.
+  function joinOrderPlayers() {
+    return Object.entries(players)
+      .map(([id, p]) => ({ id, name: p.name || "Ospite", finished: !!p.finishedAt, joinedAt: typeof p.joinedAt === "number" ? p.joinedAt : 0 }))
+      .sort((a, b) => a.joinedAt - b.joinedAt);
   }
 
   function render() {
@@ -100,31 +109,29 @@
   }
 
   function renderBoard() {
-    const list = rankedPlayers();
+    const list = joinOrderPlayers();
     const board = document.getElementById("liveBoard");
     if (!list.length) {
       board.innerHTML = '<div class="empty-note">In attesa dei primi giocatori…</div>';
       return;
     }
-    board.innerHTML = list.map((p, i) => {
-      const rankClass = i === 0 ? "top1" : i === 1 ? "top2" : i === 2 ? "top3" : "";
-      return (
-        '<div class="row ' + rankClass + '">' +
-        '<div class="rank">' + (i + 1) + "</div>" +
-        '<div class="rname">' + escapeHtml(p.name) +
-        '<div class="rstatus">' + (p.finished ? "risposte inviate" : "in corso…") + "</div></div>" +
-        '<div class="rscore tabular">' + p.score + "/30</div>" +
-        "</div>"
-      );
-    }).join("");
+    // niente punteggi qui: solo chi ha già inviato e chi sta ancora rispondendo
+    board.innerHTML = list.map((p) => (
+      '<div class="row live-row">' +
+      '<div class="rname">' + escapeHtml(p.name) + "</div>" +
+      '<div class="badge' + (p.finished ? " done" : "") + '">' + (p.finished ? "✓ risposte inviate" : "in corso…") + "</div>" +
+      "</div>"
+    )).join("");
   }
 
   function renderFinal() {
     const list = rankedPlayers();
     const podiumEl = document.getElementById("podium");
     const restEl = document.getElementById("restList");
+    const restHeading = document.getElementById("restHeading");
     if (!list.length) {
       podiumEl.innerHTML = "";
+      restHeading.hidden = true;
       restEl.innerHTML = '<div class="empty-note">Nessun giocatore ha partecipato.</div>';
       return;
     }
@@ -140,6 +147,7 @@
     )).join("");
 
     const rest = list.slice(3);
+    restHeading.hidden = rest.length === 0;
     restEl.innerHTML = rest.map((p, i) => (
       '<div class="row">' +
       '<div class="rank">' + (i + 4) + "</div>" +

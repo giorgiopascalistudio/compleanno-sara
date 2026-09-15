@@ -21,22 +21,34 @@
   body { padding: 0; min-height: 100vh; overflow-x: hidden; }
   #fsBtn { font-size: 1.1rem; line-height: 1; padding-left: 16px; padding-right: 16px; }
   .stage {
+    position: relative;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: clamp(18px, 3vw, 48px);
   }
-  .stage-top {
+  .controls {
+    position: absolute;
+    top: clamp(18px, 3vw, 48px);
+    right: clamp(18px, 3vw, 48px);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
+    z-index: 5;
   }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand h1 { margin: 0; font-size: clamp(1.3rem, 3vw, 1.8rem); }
-  .brand .eyebrow { display: block; margin-bottom: 2px; }
-  .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+  .brand { text-align: center; padding: 4px 100px 22px; }
+  .brand .eyebrow { display: block; margin-bottom: 10px; }
+  .brand h1 {
+    margin: 0;
+    font-size: clamp(2.3rem, 6vw, 4.4rem);
+    line-height: 1.08;
+    animation: heroIn 0.9s cubic-bezier(.2,.8,.2,1) both, shine 5s linear infinite, heroGlow 4s ease-in-out infinite;
+  }
+  @keyframes heroIn { from { opacity: 0; transform: translateY(-22px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes heroGlow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(217, 180, 94, 0.25)); }
+    50% { filter: drop-shadow(0 0 26px rgba(217, 180, 94, 0.6)); }
+  }
 
   .screen { display: none; flex: 1; }
   .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.5s ease both; }
@@ -53,29 +65,38 @@
     display: inline-flex;
   }
   .pre-info { max-width: 420px; text-align: left; }
-  .pre-info h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 8px 0 12px; }
+  .pre-info h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 8px 0 18px; }
   .pre-info p { color: var(--text-dim); line-height: 1.55; margin: 0 0 18px; }
-  .link-row {
-    display: flex; gap: 8px; align-items: center;
-    background: var(--card-soft);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin-bottom: 22px;
+  .start-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 26px 28px;
+    margin: 0 0 22px;
   }
-  .link-row code { color: var(--gold-1); font-size: 0.85rem; overflow-wrap: anywhere; flex: 1; }
-  .joined-pill {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: var(--card-soft);
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    padding: 10px 20px;
+  .start-count { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .start-count-num {
     font-family: "Playfair Display", serif;
     font-weight: 700;
-    font-size: 1.2rem;
-    margin-bottom: 18px;
+    font-size: 2.6rem;
+    line-height: 1;
+    background: var(--metal);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 5s linear infinite;
   }
-  .joined-names { display: flex; flex-wrap: wrap; gap: 8px; max-width: 480px; margin-bottom: 22px; }
+  .start-count-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  .start-card .btn { width: 100%; }
+  .joined-names { display: flex; flex-wrap: wrap; gap: 8px; max-width: 480px; }
   .name-chip {
     background: var(--card-soft);
     border: 1px solid var(--line);
@@ -119,6 +140,33 @@
   .row .rstatus { font-size: 0.72rem; color: var(--text-dim); font-family: "Manrope", sans-serif; font-weight: 400; }
   .row .rscore { font-family: "Playfair Display", serif; font-weight: 700; font-size: 1.1rem; color: var(--emerald); }
 
+  /* riga della classifica LIVE: niente punteggio in vista, solo nome + stato,
+     per non svelare a nessuno chi sta andando meglio prima dello scadere del tempo */
+  .row.live-row .rname { font-weight: 700; }
+  .badge {
+    margin-left: auto;
+    flex: none;
+    font-size: 0.72rem;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--card-soft);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+  }
+  .badge.done { color: var(--emerald); border-color: rgba(82, 230, 176, 0.4); background: rgba(82, 230, 176, 0.12); }
+
+  .rest-heading {
+    width: 100%;
+    max-width: 640px;
+    margin: 6px auto 0;
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
   /* --- FINALE --- */
   #screen-final { align-items: center; justify-content: flex-start; gap: 20px; padding-top: clamp(10px, 3vh, 30px); }
   #screen-final h2 { font-size: clamp(1.8rem, 5vw, 3rem); text-align: center; margin: 0; }
@@ -161,15 +209,13 @@
 
 <div class="page">
 <div class="stage">
-  <div class="stage-top">
-    <div class="brand">
-      <span class="eyebrow">Quiz di compleanno</span>
-      <h1 class="foil">Quanto conosci Sara? 🎂</h1>
-    </div>
-    <div class="controls">
-      <button class="btn ghost" id="fsBtn" title="Schermo intero">⛶</button>
-      <button class="btn ghost" id="resetBtn">↺ Nuova partita</button>
-    </div>
+  <div class="controls">
+    <button class="btn ghost" id="fsBtn" title="Schermo intero">⛶</button>
+    <button class="btn ghost" id="resetBtn">↺ Nuova partita</button>
+  </div>
+  <div class="brand">
+    <span class="eyebrow">Quiz di compleanno</span>
+    <h1 class="foil">Quanto conosci Sara? 🎂</h1>
   </div>
 
   <!-- PRE-GAME -->
@@ -177,11 +223,15 @@
     <div class="pre-grid">
       <div class="qr-box" id="qrBox"></div>
       <div class="pre-info">
-        <div class="joined-pill">🥂 <span id="preCount">0</span> invitati pronti</div>
         <h2>Inquadra il QR ed entra nel gioco</h2>
-        <div class="link-row"><code id="joinUrl">—</code></div>
+        <div class="card start-card">
+          <div class="start-count">
+            <span class="start-count-num tabular" id="preCount">0</span>
+            <span class="start-count-label">🥂 invitati pronti</span>
+          </div>
+          <button class="btn" id="startBtn">Inizia il gioco — 10 minuti ⏱️</button>
+        </div>
         <div class="joined-names" id="joinedNames"></div>
-        <button class="btn" id="startBtn">Inizia il gioco — 10 minuti ⏱️</button>
       </div>
     </div>
   </section>
@@ -199,6 +249,7 @@
   <section class="screen" id="screen-final">
     <h2 class="foil">🏆 Classifica finale 🏆</h2>
     <div class="podium" id="podium"></div>
+    <div class="rest-heading" id="restHeading" hidden>Classifica completa</div>
     <div class="rest-list" id="restList"></div>
   </section>
 </div>

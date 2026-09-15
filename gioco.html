@@ -187,6 +187,7 @@
   .nav-bar #prevBtn:disabled { opacity: 0.35; }
 
   .done-card { padding: 38px 22px; text-align: center; margin-top: 20px; }
+  .done-card .spinner { margin-top: 6px; }
   .done-card .score {
     font-family: "Playfair Display", serif;
     font-weight: 700;
@@ -195,6 +196,29 @@
   }
   .done-card .score-of { color: var(--text-dim); margin-bottom: 20px; }
   .done-card p.msg { color: var(--text-dim); line-height: 1.6; }
+
+  .recap-heading {
+    margin: 30px 0 4px;
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+  .recap-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .recap-row {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border-left: 3px solid var(--line-strong);
+  }
+  .recap-row.correct { border-left-color: var(--emerald); }
+  .recap-row.wrong { border-left-color: var(--ruby); }
+  .recap-q { font-size: 0.92rem; line-height: 1.35; font-weight: 700; font-family: "Playfair Display", serif; }
+  .recap-a { font-size: 0.84rem; color: var(--text-dim); }
+  .recap-a b { color: var(--text); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -252,12 +276,9 @@
 
   <!-- SCREEN: fine -->
   <section class="screen" id="screen-done">
-    <div class="card done-card">
-      <div class="eyebrow">Risultato</div>
-      <div class="score tabular foil" id="finalScore">0</div>
-      <div class="score-of">risposte corrette su 30</div>
-      <p class="msg" id="doneMsg">Grazie per aver giocato! Guarda la classifica generale sul maxischermo per scoprire la tua posizione 🏆</p>
-    </div>
+    <div class="card done-card" id="doneCard"></div>
+    <div class="recap-heading" id="recapHeading" hidden>Le tue risposte</div>
+    <div class="recap-list" id="recapList"></div>
   </section>
 
 </main>

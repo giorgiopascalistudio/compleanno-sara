@@ -62,8 +62,9 @@
   const qList = document.getElementById("qList");
   const progressFill = document.getElementById("progressFill");
   const progressLabel = document.getElementById("progressLabel");
-  const finalScore = document.getElementById("finalScore");
-  const doneMsg = document.getElementById("doneMsg");
+  const doneCard = document.getElementById("doneCard");
+  const recapHeading = document.getElementById("recapHeading");
+  const recapList = document.getElementById("recapList");
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
 
@@ -308,19 +309,62 @@
       finishedAt: firebase.database.ServerValue.TIMESTAMP,
       timeMs: Math.max(0, serverNow() - startedAt),
     });
-    renderDone(score);
+    renderDone();
   }
 
-  function renderDone(scoreArg) {
-    const score = typeof scoreArg === "number" ? scoreArg : computeScore();
-    finalScore.textContent = score;
-    if (lastReason === "time") {
-      doneMsg.textContent = "Tempo scaduto! Le tue risposte sono state inviate automaticamente. Guarda la classifica sul maxischermo 🏆";
-    } else if (lastReason === "ended" && countAnswered() === 0) {
-      doneMsg.textContent = "Il gioco è già terminato. Guarda la classifica sul maxischermo!";
-    } else {
-      doneMsg.textContent = "Grazie per aver giocato! Guarda la classifica generale sul maxischermo per scoprire la tua posizione 🏆";
+  // Il punteggio e le risposte corrette restano nascosti finché il gioco
+  // non è ufficialmente terminato per tutti (currentGame.state === "ended"):
+  // niente spoiler sul telefono di chi finisce prima degli altri. Questa
+  // funzione viene richiamata ad ogni aggiornamento della partita, quindi
+  // il passaggio "in attesa" → "rivelato" avviene da solo, in tempo reale.
+  function renderDone() {
+    const revealed = !!(currentGame && currentGame.state === "ended");
+    const played = countAnswered() > 0;
+
+    if (!revealed) {
+      doneCard.innerHTML =
+        '<div class="eyebrow">Risposte inviate</div>' +
+        '<div class="spinner"></div>' +
+        '<p class="msg">Le tue risposte sono salvate al sicuro. Scoprirai il punteggio e le risposte corrette quando il tempo sarà scaduto — guarda il maxischermo 🤫</p>';
+      recapHeading.hidden = true;
+      recapList.innerHTML = "";
+      showScreen("done");
+      return;
     }
+
+    if (!played) {
+      doneCard.innerHTML =
+        '<div class="eyebrow">Peccato</div>' +
+        '<p class="msg" style="margin-top:10px;">Il gioco è già terminato. Guarda la classifica sul maxischermo!</p>';
+      recapHeading.hidden = true;
+      recapList.innerHTML = "";
+      showScreen("done");
+      return;
+    }
+
+    const score = computeScore();
+    let msg = "Grazie per aver giocato! Guarda la classifica generale sul maxischermo per scoprire la tua posizione 🏆";
+    if (lastReason === "time") msg = "Tempo scaduto! Ecco come sei andato/a 🏆";
+    doneCard.innerHTML =
+      '<div class="eyebrow">Risultato</div>' +
+      '<div class="score tabular foil">' + score + "</div>" +
+      '<div class="score-of">risposte corrette su ' + QUIZ_QUESTIONS.length + "</div>" +
+      '<p class="msg">' + msg + "</p>";
+
+    recapHeading.hidden = false;
+    recapList.innerHTML = QUIZ_QUESTIONS.map((item, i) => {
+      const given = (answersLocal["q" + i] || "").trim();
+      const correct = isCorrectAnswer(given, item.accepted);
+      const correctAnswer = escapeHtml(item.accepted[0]);
+      const yourAnswer = given ? "Tu: <b>" + escapeHtml(given) + "</b>" : "Tu: <b>nessuna risposta</b>";
+      const answerLine = correct ? yourAnswer : yourAnswer + " — corretto: <b>" + correctAnswer + "</b>";
+      return (
+        '<div class="card recap-row ' + (correct ? "correct" : "wrong") + '">' +
+        '<div class="recap-q">' + (correct ? "✅" : "❌") + " " + (i + 1) + ". " + escapeHtml(item.q) + "</div>" +
+        '<div class="recap-a">' + answerLine + "</div>" +
+        "</div>"
+      );
+    }).join("");
     showScreen("done");
   }
 
