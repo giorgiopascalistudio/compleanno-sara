@@ -239,6 +239,10 @@
   function endGame() {
     if (endWriteAttempted) return;
     endWriteAttempted = true;
+    // aggiorna subito la vista in locale, senza aspettare che la scrittura
+    // faccia il giro di andata/ritorno con il server prima di ridisegnare
+    currentGame = Object.assign({}, currentGame, { state: "ended" });
+    render();
     gameRef.update({ state: "ended" }).catch((e) => console.error("Errore nel terminare la partita:", e));
   }
 
@@ -285,6 +289,10 @@
     if (window.tryFullscreen) window.tryFullscreen();
     const count = Object.keys(players).length;
     const go = () => {
+      // aggiorna subito la vista in locale, senza aspettare che la scrittura
+      // faccia il giro di andata/ritorno con il server prima di ridisegnare
+      currentGame = { state: "running", startedAt: serverNow(), durationMs: DEFAULT_DURATION };
+      render();
       gameRef.set({
         state: "running",
         startedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -308,13 +316,25 @@
     });
   });
 
+  // Azzera la partita e torna alla schermata foto. Aggiorna SUBITO lo stato
+  // locale e ridisegna (invece di aspettare che la scrittura su Firebase
+  // faccia il giro di ritorno attraverso il listener "value"): così la
+  // regia risponde all'istante anche se la rete è lenta o il giro di
+  // andata/ritorno con il server impiega un momento — non si resta mai
+  // con un pulsante che sembra non aver fatto nulla.
+  function resetToPhotos() {
+    showQuizPre = false;
+    stopTimer();
+    players = {};
+    currentGame = { state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION };
+    render();
+    playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
+    gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
+      .catch((e) => console.error("Errore nel reimpostare la partita:", e));
+  }
+
   on("resetBtn", () => {
-    askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", () => {
-      showQuizPre = false;
-      playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
-      gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
-        .catch((e) => console.error("Errore nel reimpostare la partita:", e));
-    });
+    askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", resetToPhotos);
   });
 
   // iconcina discreta sulla schermata foto: rivela la schermata del quiz
@@ -327,26 +347,15 @@
   // dal podio finale, si torna alla schermata foto per il resto della
   // serata (equivale a "Nuova partita" ma senza dover confermare, dato
   // che a questo punto la partita è già stata vista fino in fondo)
-  on("backToPhotosBtn", () => {
-    showQuizPre = false;
-    playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
-    gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
-      .catch((e) => console.error("Errore nel reimpostare la partita:", e));
-  });
+  on("backToPhotosBtn", resetToPhotos);
 
   // pulsante nei controlli: esce dal gioco (in qualunque momento, anche a
   // partita in corso) e torna subito alla sezione foto/video
   on("exitToPhotosBtn", () => {
-    const doExit = () => {
-      showQuizPre = false;
-      playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
-      gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
-        .catch((e) => console.error("Errore nel reimpostare la partita:", e));
-    };
     if (currentGame.state === "running") {
-      askConfirm("La partita è in corso: uscire ora la termina per tutti e cancella i punteggi. Tornare alle foto?", doExit);
+      askConfirm("La partita è in corso: uscire ora la termina per tutti e cancella i punteggi. Tornare alle foto?", resetToPhotos);
     } else {
-      askConfirm("Tornare alla sezione foto/video?", doExit);
+      askConfirm("Tornare alla sezione foto/video?", resetToPhotos);
     }
   });
 
