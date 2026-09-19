@@ -36,10 +36,11 @@
   const db = firebase.database();
   const base = "games/" + GAME_ID;
 
-  // --- schermate: nome / partecipa al gioco / scatta-carica ---
+  // --- schermate: nome / scatta-carica (le foto restano sempre accessibili;
+  // l'invito a partecipare al gioco è un popup sopra questa schermata, non
+  // una schermata a sé, vedi updateVisibleScreen) ---
   const screens = {
     name: document.getElementById("screen-name"),
-    joingame: document.getElementById("screen-joingame"),
     capture: document.getElementById("screen-capture"),
   };
   function showScreen(name) {
@@ -51,33 +52,61 @@
   const installTutorial = initInstallTutorial();
 
   let guestName = (localStorage.getItem(NAME_KEY) || "").trim();
-  let gameIsRunning = false;
-  let redirected = false; // evita di rilanciare il redirect più volte sullo stesso avvio
+  let gameState = "waiting"; // "waiting" | "gathering" | "running" | "ended"
+  // "Non ora" chiude il popup senza farlo ricomparire per questo stesso
+  // giro di gioco; torna a poter comparire quando la partita si azzera
+  // (stato "waiting"/"ended") e riparte una lobby successiva.
+  let joinPromptDismissed = false;
+
   const joinGameLink = document.getElementById("joinGameLink");
+  const joinPromptOverlay = document.getElementById("joinPromptOverlay");
+  const joinPromptTitle = document.getElementById("joinPromptTitle");
+  const joinPromptDesc = document.getElementById("joinPromptDesc");
 
   function refreshJoinLink() {
     if (joinGameLink) joinGameLink.href = "gioco.html?name=" + encodeURIComponent(guestName);
   }
 
+  // Il sito non dà mai per scontato che chi ha scattato foto sia "dentro"
+  // al gioco: la schermata foto resta sempre utilizzabile (si può
+  // continuare a scattare senza giocare), e sopra vi compare solo un
+  // popup — dismissibile — quando la regia apre la lobby o il quiz è già
+  // partito. Si viene contati come partecipanti SOLO toccando "Partecipa",
+  // mai in automatico.
   function updateVisibleScreen() {
-    if (!guestName) { showScreen("name"); return; }
-    refreshJoinLink();
-    if (!gameIsRunning) {
-      redirected = false; // partita reimpostata: un prossimo avvio potrà reindirizzare di nuovo
-      showScreen("capture");
-      installTutorial.maybeAutoOpen();
+    if (!guestName) {
+      showScreen("name");
+      if (joinPromptOverlay) joinPromptOverlay.hidden = true;
       return;
     }
-    showScreen("joingame");
-    // Reindirizza da sola, senza dover reinquadrare un altro QR: il pulsante
-    // "Partecipa ora" resta comunque visibile come ripiego, nel caso il
-    // redirect automatico non partisse per qualche motivo.
-    if (!redirected) {
-      redirected = true;
-      location.href = "gioco.html?name=" + encodeURIComponent(guestName);
+    refreshJoinLink();
+    showScreen("capture");
+    installTutorial.maybeAutoOpen();
+
+    if (gameState === "waiting" || gameState === "ended") {
+      joinPromptDismissed = false; // pronto per un prossimo giro di gioco
+      if (joinPromptOverlay) joinPromptOverlay.hidden = true;
+      return;
     }
+    if (!joinPromptOverlay || joinPromptDismissed) return;
+    if (gameState === "gathering") {
+      joinPromptTitle.textContent = "Il gioco sta per iniziare!";
+      joinPromptDesc.textContent = "Quanto conosci Sara? Partecipa ora: quando l'host avvia il quiz avrai 10 minuti per rispondere alle domande.";
+    } else {
+      joinPromptTitle.textContent = "Il gioco è già iniziato!";
+      joinPromptDesc.textContent = "Puoi ancora partecipare: avrai il tempo rimasto per rispondere alle domande.";
+    }
+    joinPromptOverlay.hidden = false;
   }
   updateVisibleScreen();
+
+  const joinPromptDismissBtn = document.getElementById("joinPromptDismiss");
+  if (joinPromptDismissBtn) {
+    joinPromptDismissBtn.addEventListener("click", () => {
+      joinPromptDismissed = true;
+      joinPromptOverlay.hidden = true;
+    });
+  }
 
   document.getElementById("nameGateForm").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -89,11 +118,12 @@
   });
 
   // Se chi ha già inquadrato questo QR è ancora sulla pagina quando la
-  // regia avvia il quiz, la pagina si aggiorna da sola sulla schermata
-  // "partecipa al gioco" (senza bisogno di reinquadrare nulla).
+  // regia apre la lobby o avvia il quiz, compare da solo il popup per
+  // partecipare (senza bisogno di reinquadrare nulla) — resta comunque
+  // una scelta esplicita, mai un ingresso automatico nel gioco.
   db.ref(base + "/game").on("value", (snap) => {
     const g = snap.val();
-    gameIsRunning = !!(g && g.state === "running");
+    gameState = (g && g.state) || "waiting";
     updateVisibleScreen();
   });
 

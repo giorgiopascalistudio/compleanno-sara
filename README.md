@@ -12,17 +12,22 @@ Sito per la festa di compleanno, con due funzioni:
   iPhone/Android, che spiega come salvare la pagina nella schermata Home
   (così resta pronta per tutta la serata senza dover reinquadrare il QR
   ogni volta); si può saltare o richiamare in qualsiasi momento dal link
-  "Come salvo questa pagina in Home?". Se l'host avvia il quiz mentre
-  qualcuno è ancora su questa pagina, la pagina si aggiorna da sola
-  mostrando un invito a partecipare, senza dover reinquadrare nulla.
-- **Quiz live**: quando l'host lo decide, un'iconcina discreta rivela la
-  schermata del quiz — gli invitati inquadrano un altro QR (o toccano
-  "Partecipa ora" dalla pagina foto, se sono già entrati da lì) ed entrano in
-  un quiz di 30 domande su Sara, una alla volta. Parte per tutti un **timer
-  di 10 minuti**; alla fine (o prima, se tutti hanno già finito) il
-  maxischermo mostra la **classifica generale** con podio e coriandoli, poi
-  si torna alle foto. Un pulsante nella regia permette di uscire dal quiz e
-  tornare alle foto in qualunque momento, anche a partita in corso.
+  "Come salvo questa pagina in Home?".
+- **Quiz live**: quando l'host preme l'iconcina discreta sulla regia si apre
+  la **lobby**: la regia mostra un QR dedicato con un contatore di chi è
+  davvero pronto, e a chiunque sia sulla pagina foto compare un **popup**
+  ("Il gioco sta per iniziare!") sopra alle foto, senza interromperle —
+  si può ignorarlo con "Non ora" e continuare a scattare, oppure toccare
+  "Partecipa" per entrare sul serio. **Solo chi tocca "Partecipa" (da lì o
+  inquadrando il secondo QR) viene contato** dalla regia: il sito non dà mai
+  per scontato che aver scattato una foto equivalga a voler giocare. Quando
+  l'host vede che chi vuole giocare è dentro, preme "Inizia il gioco": parte
+  per tutti un **timer di 10 minuti** (con un breve annuncio "Si comincia!"
+  per chi era in attesa), poi arrivano le 30 domande su Sara, una alla
+  volta. Alla fine (o prima, se tutti hanno già finito) il maxischermo
+  mostra la **classifica generale** con podio e coriandoli, poi si torna
+  alle foto. Un pulsante nella regia permette di uscire dal quiz e tornare
+  alle foto in qualunque momento, anche a lobby aperta o a partita in corso.
 
 Tema grafico **oro & argento**, con pioggia di glitter animata sullo sfondo e
 titoli in "lamina metallica" che scintilla.
@@ -152,12 +157,16 @@ nascondere questi valori.
 2. Dal tuo telefono inquadra il QR piccolo in alto a sinistra, scatta una
    foto di prova e caricala: dovrebbe comparire in loop sulla regia entro
    qualche secondo.
-3. In basso a destra sulla regia c'è un'iconcina 🎮 poco visibile: premila
-   per rivelare la schermata del quiz (QR + conteggio + "Inizia il gioco").
-4. Dal telefono inquadra questo secondo QR (o apri `gioco.html` a mano),
-   inserisci un nome di prova ed entra.
+3. In alto a destra sulla regia c'è un'iconcina 🎮 poco visibile: premila
+   per aprire la lobby (QR del quiz + conteggio + "Inizia il gioco"). Sul
+   telefono che stava scattando foto dovrebbe comparire un popup "Il gioco
+   sta per iniziare!" con i pulsanti "Partecipa" e "Non ora".
+4. Tocca "Partecipa" dal popup (oppure inquadra il secondo QR, o apri
+   `gioco.html` a mano, inserendo un nome di prova): solo da questo momento
+   vieni contato — controlla che il numero sulla regia salga.
 5. Sulla regia premi **"Inizia il gioco"**: sul telefono di prova dovrebbe
-   apparire subito la prima domanda con il countdown.
+   comparire un breve "Si comincia!" e poi subito la prima domanda con il
+   countdown.
 6. Rispondi (premi "Avanti" per passare alla successiva, "Indietro" per
    tornare a modificare una risposta già data) fino all'ultima domanda dove
    "Avanti" diventa **"Invia le risposte"**. Il punteggio resta nascosto sul

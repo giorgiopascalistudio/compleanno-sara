@@ -87,11 +87,27 @@
   .namegate-card .btn { width: 100%; margin-top: 6px; }
   .namegate-hint { color: var(--text-dim); font-size: 0.82rem; margin-top: 12px; text-align: center; }
 
-  /* --- schermata: il gioco è partito, invito a raggiungerlo --- */
-  .joingame-card { padding: 32px 24px; text-align: center; }
-  .joingame-card .ico { font-size: 2.6rem; margin-bottom: 8px; }
-  .joingame-card p { color: var(--text-dim); line-height: 1.55; margin: 8px 0 22px; }
-  .joingame-card .btn { width: 100%; }
+  /* --- popup: invito a partecipare al gioco, sopra alla schermata foto
+     (non la sostituisce: si può sempre scegliere di continuare a scattare
+     invece di partecipare, con "Non ora") --- */
+  .joinprompt-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(7, 5, 2, 0.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s ease both;
+  }
+  .joinprompt-overlay[hidden] { display: none; }
+  .joinprompt-box { width: 100%; max-width: 380px; padding: 32px 26px 26px; text-align: center; }
+  .joinprompt-box .ico { font-size: 2.8rem; margin-bottom: 10px; }
+  .joinprompt-box h2 { font-size: 1.4rem; margin: 0 0 10px; }
+  .joinprompt-box p { color: var(--text-dim); line-height: 1.55; margin: 0 0 22px; }
+  .joinprompt-box .btn { width: 100%; }
+  .joinprompt-box .joinprompt-dismiss { width: 100%; margin-top: 10px; }
 
   .shot-card { padding: 26px 22px; text-align: center; }
   .shot-card.hidden-card { display: none; }
@@ -244,16 +260,6 @@
     </form>
   </section>
 
-  <!-- SCREEN: la regia ha avviato il quiz -->
-  <section class="screen" id="screen-joingame">
-    <div class="card joingame-card">
-      <div class="ico">🎮</div>
-      <h1 class="foil" style="font-size:1.7rem;">Il gioco è iniziato!</h1>
-      <p>Quanto conosci Sara? Hai 10 minuti per rispondere alle domande: la classifica sarà proiettata in sala!</p>
-      <a class="btn" id="joinGameLink" href="gioco.html">Partecipa ora ✨</a>
-    </div>
-  </section>
-
   <!-- SCREEN: scatta/carica un ricordo -->
   <section class="screen" id="screen-capture">
     <button class="install-hint-link" id="installHintLink" hidden>📲 Come salvo questa pagina in Home?</button>
@@ -294,6 +300,16 @@
 </main>
 </div>
 
+<div class="joinprompt-overlay" id="joinPromptOverlay" hidden>
+  <div class="card joinprompt-box">
+    <div class="ico">🎮</div>
+    <h2 class="foil" id="joinPromptTitle">Il gioco sta per iniziare!</h2>
+    <p id="joinPromptDesc">Quanto conosci Sara? Partecipa ora: quando l'host avvia il quiz avrai 10 minuti per rispondere alle domande.</p>
+    <a class="btn" id="joinGameLink" href="gioco.html">Partecipa ✨</a>
+    <button class="btn ghost joinprompt-dismiss" id="joinPromptDismiss">Non ora, continuo con le foto</button>
+  </div>
+</div>
+
 <div class="tutorial-overlay" id="tutorialOverlay" hidden>
   <div class="card tutorial-box">
     <button class="tutorial-close" id="tutorialClose" title="Chiudi" aria-label="Chiudi">✕</button>
@@ -318,6 +334,6 @@
 <script src="cloudinary-config.js?v=2"></script>
 <script src="sparkles.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="capture.js?v=4"></script>
+<script src="capture.js?v=5"></script>
 </body>
 </html>

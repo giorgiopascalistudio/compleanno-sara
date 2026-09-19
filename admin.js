@@ -66,11 +66,12 @@
     // solo l'iconcina del gioco (vedi CSS .stage.mode-photos)
     stageEl.classList.toggle("mode-photos", name === "photos");
   }
-  // Le foto sono la schermata di default per tutta la serata: si passa al
-  // quiz solo premendo l'iconcina discreta, e si torna alle foto con
-  // "Nuova partita" o "Torna alle foto". Non è sincronizzato su Firebase:
-  // riguarda solo cosa mostra QUESTO schermo, non lo stato del gioco.
-  let showQuizPre = false;
+  // Le foto sono la schermata di default per tutta la serata; si passa al
+  // quiz premendo l'iconcina discreta, che apre la "lobby" (stato
+  // "gathering"): da lì in poi lo stato è sincronizzato su Firebase, così
+  // anche gli invitati sanno che il gioco sta per iniziare e possono
+  // scegliere di parteciparvi (vedi capture.js), invece di essere dati per
+  // scontato "dentro" solo perché avevano già inquadrato il QR delle foto.
   let lastScreenName = null;
 
   let players = {};
@@ -125,8 +126,10 @@
       target = "live";
     } else if (currentGame.state === "ended") {
       target = "final";
+    } else if (currentGame.state === "gathering") {
+      target = "pre";
     } else {
-      target = showQuizPre ? "pre" : "photos";
+      target = "photos";
     }
 
     // avvia/ferma lo slideshow solo quando si entra o si esce dalla
@@ -323,7 +326,6 @@
   // andata/ritorno con il server impiega un momento — non si resta mai
   // con un pulsante che sembra non aver fatto nulla.
   function resetToPhotos() {
-    showQuizPre = false;
     stopTimer();
     players = {};
     currentGame = { state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION };
@@ -337,11 +339,16 @@
     askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", resetToPhotos);
   });
 
-  // iconcina discreta sulla schermata foto: rivela la schermata del quiz
-  // (QR + conteggio + "Inizia il gioco"), senza avviarlo subito
+  // iconcina discreta sulla schermata foto: apre la lobby ("gathering"),
+  // sincronizzata su Firebase — da questo momento gli invitati vedono un
+  // invito a partecipare (vedi capture.js) e chi tocca "Partecipa" viene
+  // contato qui in tempo reale. Il quiz vero e proprio parte solo dopo,
+  // premendo "Inizia il gioco".
   on("quizToggleBtn", () => {
-    showQuizPre = true;
+    currentGame = { state: "gathering", startedAt: null, durationMs: DEFAULT_DURATION };
     render();
+    gameRef.set({ state: "gathering", startedAt: null, durationMs: DEFAULT_DURATION })
+      .catch((e) => console.error("Errore nell'aprire la lobby:", e));
   });
 
   // dal podio finale, si torna alla schermata foto per il resto della
@@ -354,6 +361,8 @@
   on("exitToPhotosBtn", () => {
     if (currentGame.state === "running") {
       askConfirm("La partita è in corso: uscire ora la termina per tutti e cancella i punteggi. Tornare alle foto?", resetToPhotos);
+    } else if (currentGame.state === "gathering") {
+      askConfirm("Chiudere la lobby e tornare alle foto?", resetToPhotos);
     } else {
       askConfirm("Tornare alla sezione foto/video?", resetToPhotos);
     }
