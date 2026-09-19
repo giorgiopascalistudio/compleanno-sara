@@ -42,7 +42,11 @@
   /* niente scorrimento di pagina: tutto fisso in un unico schermo.
      Unica eccezione deliberata: il recap con fino a 30 domande a fine
      partita, che non può stare tutto a schermo e scorre al suo interno. */
-  .page { height: 100dvh; display: flex; flex-direction: column; }
+  /* "--app-vh" (impostata da keyboard-fix.js con la reale altezza
+     visibile) sostituisce 100dvh appena disponibile, così quando compare
+     la tastiera l'intera schermata si restringe insieme a lei invece di
+     restarne coperta */
+  .page { height: 100dvh; height: var(--app-vh, 100dvh); display: flex; flex-direction: column; }
 
   .topbar {
     flex: none;
@@ -367,6 +371,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.4/confetti.browser.js"></script>
 <script src="firebase-config.js?v=2"></script>
 <script src="quiz-data.js?v=2"></script>
+<script src="keyboard-fix.js"></script>
 <script src="sparkles.js?v=2"></script>
 <script src="fullscreen.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>

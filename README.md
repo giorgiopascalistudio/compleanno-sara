@@ -43,6 +43,7 @@ titoli in "lamina metallica" che scintilla.
 | `quiz-data.js` | Le 30 domande e le risposte accettate (con varianti, maiuscole/minuscole e accenti ignorati) |
 | `style.css` | Stile condiviso (palette oro/argento, animazioni) |
 | `sparkles.js` | La pioggia di glitter animata sullo sfondo |
+| `keyboard-fix.js` | Su iPhone, tiene box di testo e pulsanti sollevati sopra la tastiera invece di lasciarli coperti (vedi sotto) |
 | `fullscreen.js` | Richiesta di schermo intero al primo "Inizia il gioco" |
 | `firebase-config.js` | **Da compilare** — dati del progetto Firebase (elenco foto + dati del quiz, vedi sotto) |
 | `cloudinary-config.js` | **Da compilare** — dati dell'account Cloudinary (dove vengono caricate le foto, vedi sotto) |
