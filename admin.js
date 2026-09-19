@@ -269,7 +269,18 @@
   }
   window.pageConfirm = askConfirm; // riusata da photos.js per il cestino sulle foto
 
-  document.getElementById("startBtn").addEventListener("click", () => {
+  // Collega un pulsante in modo "sicuro": se per qualunque motivo un
+  // elemento non viene trovato (id sbagliato, caricamento parziale...) non
+  // deve bloccare in silenzio l'aggancio di TUTTI i pulsanti successivi —
+  // cosa che capiterebbe usando semplici catene .addEventListener in fila,
+  // dove un errore su una riga impedisce alle righe dopo di essere eseguite.
+  function on(id, handler) {
+    const el = document.getElementById(id);
+    if (!el) { console.error("Pulsante non trovato nella pagina:", id); return; }
+    el.addEventListener("click", handler);
+  }
+
+  on("startBtn", () => {
     // la richiesta di schermo intero deve essere la primissima cosa del gestore
     if (window.tryFullscreen) window.tryFullscreen();
     const count = Object.keys(players).length;
@@ -287,7 +298,7 @@
     }
   });
 
-  document.getElementById("endNowBtn").addEventListener("click", () => {
+  on("endNowBtn", () => {
     // per quando tutti gli invitati finiscono prima dello scadere del tempo:
     // chiude subito la partita e passa alla classifica finale, come se il
     // tempo fosse scaduto in questo istante.
@@ -297,7 +308,7 @@
     });
   });
 
-  document.getElementById("resetBtn").addEventListener("click", () => {
+  on("resetBtn", () => {
     askConfirm("Sicuro? Verranno cancellati tutti i giocatori e i punteggi per iniziare una nuova partita.", () => {
       showQuizPre = false;
       playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
@@ -308,7 +319,7 @@
 
   // iconcina discreta sulla schermata foto: rivela la schermata del quiz
   // (QR + conteggio + "Inizia il gioco"), senza avviarlo subito
-  document.getElementById("quizToggleBtn").addEventListener("click", () => {
+  on("quizToggleBtn", () => {
     showQuizPre = true;
     render();
   });
@@ -316,7 +327,7 @@
   // dal podio finale, si torna alla schermata foto per il resto della
   // serata (equivale a "Nuova partita" ma senza dover confermare, dato
   // che a questo punto la partita è già stata vista fino in fondo)
-  document.getElementById("backToPhotosBtn").addEventListener("click", () => {
+  on("backToPhotosBtn", () => {
     showQuizPre = false;
     playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
     gameRef.set({ state: "waiting", startedAt: null, durationMs: DEFAULT_DURATION })
@@ -325,7 +336,7 @@
 
   // pulsante nei controlli: esce dal gioco (in qualunque momento, anche a
   // partita in corso) e torna subito alla sezione foto/video
-  document.getElementById("exitToPhotosBtn").addEventListener("click", () => {
+  on("exitToPhotosBtn", () => {
     const doExit = () => {
       showQuizPre = false;
       playersRef.remove().catch((e) => console.error("Errore nel cancellare i giocatori:", e));
