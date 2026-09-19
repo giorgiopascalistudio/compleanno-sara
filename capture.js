@@ -48,6 +48,7 @@
 
   let guestName = (localStorage.getItem(NAME_KEY) || "").trim();
   let gameIsRunning = false;
+  let redirected = false; // evita di rilanciare il redirect più volte sullo stesso avvio
   const joinGameLink = document.getElementById("joinGameLink");
 
   function refreshJoinLink() {
@@ -57,7 +58,19 @@
   function updateVisibleScreen() {
     if (!guestName) { showScreen("name"); return; }
     refreshJoinLink();
-    showScreen(gameIsRunning ? "joingame" : "capture");
+    if (!gameIsRunning) {
+      redirected = false; // partita reimpostata: un prossimo avvio potrà reindirizzare di nuovo
+      showScreen("capture");
+      return;
+    }
+    showScreen("joingame");
+    // Reindirizza da sola, senza dover reinquadrare un altro QR: il pulsante
+    // "Partecipa ora" resta comunque visibile come ripiego, nel caso il
+    // redirect automatico non partisse per qualche motivo.
+    if (!redirected) {
+      redirected = true;
+      location.href = "gioco.html?name=" + encodeURIComponent(guestName);
+    }
   }
   updateVisibleScreen();
 

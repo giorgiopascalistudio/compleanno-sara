@@ -69,6 +69,20 @@
     font-weight: 600;
     font-size: 1.05rem;
   }
+  .topbar-right { display: flex; align-items: center; gap: 10px; flex: none; }
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    flex: none;
+  }
+  .icon-btn[hidden] { display: none; }
   .timer-pill[hidden] { display: none; }
   .timer-pill.low { background: rgba(255, 93, 122, 0.16); border-color: rgba(255, 93, 122, 0.5); color: #ffb3c0; }
   .timer-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); flex: none; box-shadow: 0 0 8px var(--emerald); }
@@ -255,8 +269,11 @@
 <div class="page">
 <div class="topbar">
   <div class="who">✨ <b id="topbarName">Ospite</b></div>
-  <div class="timer-pill tabular" id="timerPill" hidden>
-    <span class="dot"></span><span id="timerText">10:00</span>
+  <div class="topbar-right">
+    <a class="btn ghost icon-btn" id="backToPhotoBtn" href="foto.html" title="Torna alle foto" aria-label="Torna alle foto">📸</a>
+    <div class="timer-pill tabular" id="timerPill" hidden>
+      <span class="dot"></span><span id="timerText">10:00</span>
+    </div>
   </div>
 </div>
 
@@ -323,6 +340,6 @@
 <script src="sparkles.js?v=2"></script>
 <script src="fullscreen.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="player.js?v=2"></script>
+<script src="player.js?v=3"></script>
 </body>
 </html>

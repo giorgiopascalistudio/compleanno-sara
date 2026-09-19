@@ -50,8 +50,12 @@
     quiz: document.getElementById("screen-quiz"),
     done: document.getElementById("screen-done"),
   };
+  const backToPhotoBtn = document.getElementById("backToPhotoBtn");
   function showScreen(name) {
     Object.entries(screens).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    // visibile prima e dopo la partita, nascosto solo mentre si risponde
+    // (per non far navigare via per sbaglio mentre si è nel vivo del quiz)
+    if (backToPhotoBtn) backToPhotoBtn.hidden = name === "quiz";
   }
 
   const topbarName = document.getElementById("topbarName");
