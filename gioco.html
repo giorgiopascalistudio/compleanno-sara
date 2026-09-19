@@ -6,6 +6,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quiz Sara">
+<!-- stesso manifest/scope di foto.html: senza uno scope condiviso, su
+     iPhone passare da una pagina all'altra dello stesso sito può far
+     ricomparire la barra del browser anche se si era partiti "come app" -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- questa pagina può restare aperta a lungo in attesa che l'host avvii
      il gioco: senza questi header il telefono può continuare a mostrare
      una versione vecchia della pagina anche dopo un aggiornamento -->

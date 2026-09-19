@@ -46,6 +46,7 @@ titoli in "lamina metallica" che scintilla.
 | `fullscreen.js` | Richiesta di schermo intero al primo "Inizia il gioco" |
 | `firebase-config.js` | **Da compilare** — dati del progetto Firebase (elenco foto + dati del quiz, vedi sotto) |
 | `cloudinary-config.js` | **Da compilare** — dati dell'account Cloudinary (dove vengono caricate le foto, vedi sotto) |
+| `manifest.json` + `icon-192.png` / `icon-512.png` / `apple-touch-icon.png` | Fanno sì che `foto.html`/`gioco.html`, una volta salvate in Home, restino "come un'app" (niente barra del browser) anche passando dall'una all'altra |
 
 Il sito è puramente statico (nessun server da installare). La sincronizzazione
 in tempo reale (giocatori, risposte, elenco foto) usa **Firebase Realtime
