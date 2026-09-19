@@ -42,11 +42,14 @@
   let timerInterval = null;
   let lastReason = null;
   let currentQ = 0; // indice della domanda mostrata (una alla volta)
+  let startAnnounced = false; // mostra "Si comincia!" una sola volta per partita
+  let startingTimer = null;
 
   // --- elementi ---
   const screens = {
     join: document.getElementById("screen-join"),
     waiting: document.getElementById("screen-waiting"),
+    starting: document.getElementById("screen-starting"),
     quiz: document.getElementById("screen-quiz"),
     done: document.getElementById("screen-done"),
   };
@@ -139,7 +142,31 @@
         finishQuiz("time");
         return;
       }
-      if (!quizBuilt) buildQuiz();
+      if (!quizBuilt) {
+        // annuncia l'avvio con un breve schermo dedicato (invece di passare
+        // in silenzio da "in attesa" alla prima domanda): chi aveva il
+        // telefono bloccato o distratto non si perde il momento in cui la
+        // partita parte davvero.
+        if (!startAnnounced) {
+          startAnnounced = true;
+          showScreen("starting");
+          fireCenterBurst();
+          startingTimer = setTimeout(() => {
+            startingTimer = null;
+            if (currentGame && currentGame.state === "running") {
+              buildQuiz();
+              showScreen("quiz");
+              startTimer();
+            } else {
+              // la partita è stata annullata nel frattempo: si rifarà
+              // l'annuncio se e quando ripartirà davvero
+              startAnnounced = false;
+              render();
+            }
+          }, 1400);
+        }
+        return;
+      }
       showScreen("quiz");
       startTimer();
     } else if (currentGame.state === "ended") {
@@ -243,6 +270,21 @@
 
   prevBtn.addEventListener("click", goPrev);
   nextBtn.addEventListener("click", goNext);
+
+  function fireCenterBurst() {
+    if (typeof confetti !== "function") return;
+    confetti({
+      particleCount: 60,
+      spread: 100,
+      startVelocity: 40,
+      scalar: 0.9,
+      gravity: 0.85,
+      ticks: 120,
+      origin: { x: 0.5, y: 0.35 },
+      colors: ["#fbe9ad", "#e0b24f", "#b0812a", "#f4f5f8", "#c7cad3"],
+      disableForReducedMotion: true,
+    });
+  }
 
   function fireGlitterBurst(originEl) {
     if (typeof confetti !== "function" || !originEl) return;

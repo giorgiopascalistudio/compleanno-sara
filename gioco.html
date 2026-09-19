@@ -111,9 +111,11 @@
   .screen.active { display: flex; flex-direction: column; flex: 1; min-height: 0; animation: fadeIn 0.55s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* nome e attesa: poco contenuto, si centra nello spazio fisso disponibile */
+  /* nome, attesa e annuncio d'avvio: poco contenuto, si centrano nello
+     spazio fisso disponibile */
   #screen-join.active,
-  #screen-waiting.active { justify-content: center; }
+  #screen-waiting.active,
+  #screen-starting.active { justify-content: center; }
 
   .join-card { padding: 28px 22px; margin-top: 20px; }
   .field { margin-bottom: 16px; }
@@ -141,6 +143,19 @@
   input[type="text"]:focus { border-color: var(--gold-2); box-shadow: 0 0 0 3px rgba(217, 180, 94, 0.18); }
   .join-card .btn { width: 100%; margin-top: 6px; }
   .hint { color: var(--text-dim); font-size: 0.82rem; margin-top: 10px; text-align: center; }
+
+  /* annuncio "si comincia!", mostrato un istante prima della prima domanda
+     a chi era già in attesa quando l'host avvia il gioco */
+  .starting-card { padding: 44px 26px; text-align: center; margin-top: 20px; }
+  .starting-card .starting-icon {
+    font-size: 3.4rem;
+    margin-bottom: 12px;
+    display: inline-block;
+    animation: startPop 0.55s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes startPop { from { opacity: 0; transform: scale(0.4) rotate(-10deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+  .starting-card h1 { font-size: clamp(1.9rem, 7vw, 2.5rem); margin: 4px 0 10px; }
+  .starting-card p { color: var(--text-dim); margin: 0; }
 
   .waiting-card { padding: 36px 22px; text-align: center; margin-top: 20px; }
   .spinner {
@@ -306,6 +321,15 @@
     </div>
   </section>
 
+  <!-- SCREEN: annuncio d'avvio, un istante prima della prima domanda -->
+  <section class="screen" id="screen-starting">
+    <div class="card starting-card">
+      <div class="starting-icon">🎮</div>
+      <h1 class="foil">Si comincia!</h1>
+      <p>Preparati: tra un istante la prima domanda…</p>
+    </div>
+  </section>
+
   <!-- SCREEN: quiz -->
   <section class="screen" id="screen-quiz">
     <div class="progress-wrap">
@@ -340,6 +364,6 @@
 <script src="sparkles.js?v=2"></script>
 <script src="fullscreen.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="player.js?v=3"></script>
+<script src="player.js?v=4"></script>
 </body>
 </html>
