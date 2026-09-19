@@ -46,6 +46,10 @@
     Object.entries(screens).forEach(([k, el]) => el.classList.toggle("active", k === name));
   }
 
+  // definita più sotto nel file, ma le dichiarazioni di funzione sono
+  // "hoisted": è già utilizzabile qui, prima della sua definizione testuale
+  const installTutorial = initInstallTutorial();
+
   let guestName = (localStorage.getItem(NAME_KEY) || "").trim();
   let gameIsRunning = false;
   let redirected = false; // evita di rilanciare il redirect più volte sullo stesso avvio
@@ -61,6 +65,7 @@
     if (!gameIsRunning) {
       redirected = false; // partita reimpostata: un prossimo avvio potrà reindirizzare di nuovo
       showScreen("capture");
+      installTutorial.maybeAutoOpen();
       return;
     }
     showScreen("joingame");
@@ -267,50 +272,119 @@
     retakeBtn.disabled = false;
   });
 
-  // --- suggerimento "aggiungi a schermata Home", una tantum ---
-  initInstallBanner();
-
-  function initInstallBanner() {
-    const banner = document.getElementById("installBanner");
-    if (!banner) return;
+  function initInstallTutorial() {
+    const noop = { maybeAutoOpen() {} };
+    const overlay = document.getElementById("tutorialOverlay");
+    const hintLink = document.getElementById("installHintLink");
+    if (!overlay || !hintLink) return noop;
 
     const alreadyInstalled =
       window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    const alreadyDismissed = localStorage.getItem("installHintDismissed_v1") === "1";
-    if (alreadyInstalled || alreadyDismissed) return;
+    if (alreadyInstalled) return noop; // niente da installare: l'icona esiste già
 
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const installText = document.getElementById("installText");
-    const installCta = document.getElementById("installCta");
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (!isIos && !isAndroid) return noop; // su desktop "salva in Home" non ha senso
 
-    if (isIos) {
-      installText.innerHTML = "<b>Consiglio:</b> tocca l'icona di condivisione <b>⎋</b> qui sotto (o in alto, secondo il browser) e scegli <b>\"Aggiungi a Home\"</b>: riaprirai questa pagina in un tap per tutta la serata, senza reinquadrare il QR ogni volta.";
-    } else {
-      installText.textContent = "Consiglio: aggiungi questa pagina alla schermata Home per riaprirla in un tap per tutta la serata, senza dover reinquadrare il QR ogni volta.";
-    }
+    // Icone generiche disegnate al volo (nessuna dipendenza esterna):
+    // "condividi" (freccia su + vassoio), "menù" (tre puntini), "aggiungi"
+    // (più dentro un riquadro), "fatto" (segno di spunta).
+    const ICONS = {
+      share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><rect x="4" y="12" width="16" height="8" rx="2"/></svg>',
+      menu: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>',
+      add: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+      check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
+    };
 
-    banner.hidden = false;
+    const STEPS_IOS = [
+      { icon: "share", title: "Tocca l'icona Condividi", desc: "In basso al centro dello schermo (su iPad, in alto a destra) trova il pulsante con il quadratino e la freccia verso l'alto, e toccalo." },
+      { icon: "add", title: "Cerca “Aggiungi a Home”", desc: "Scorri il menù che si apre finché non vedi la voce “Aggiungi a schermata Home”, e toccala." },
+      { icon: "check", title: "Conferma, sei pronta/o!", desc: "Tocca “Aggiungi” in alto a destra: comparirà un'icona nella tua schermata Home. Usala per tutta la serata, senza reinquadrare il QR!" },
+    ];
+    const STEPS_ANDROID = [
+      { icon: "menu", title: "Apri il menù del browser", desc: "Tocca i tre puntini ⋮ in alto a destra dello schermo." },
+      { icon: "add", title: "Scegli “Installa app”", desc: "Nel menù tocca “Installa app” (oppure “Aggiungi a schermata Home”, secondo il browser)." },
+      { icon: "check", title: "Conferma, sei pronta/o!", desc: "Conferma toccando “Installa”: comparirà un'icona nella tua schermata Home. Usala per tutta la serata, senza reinquadrare il QR!" },
+    ];
+    const steps = isIos ? STEPS_IOS : STEPS_ANDROID;
 
-    // Su Android/Chrome si può offrire un pulsante che apre davvero il
-    // prompt di installazione nativo, invece delle sole istruzioni.
+    const dotsEl = document.getElementById("tutorialDots");
+    const iconEl = document.getElementById("tutorialIcon");
+    const titleEl = document.getElementById("tutorialTitle");
+    const descEl = document.getElementById("tutorialDesc");
+    const quickBtn = document.getElementById("tutorialQuickInstall");
+    const prevBtn = document.getElementById("tutorialPrev");
+    const nextBtn = document.getElementById("tutorialNext");
+    const skipBtn = document.getElementById("tutorialSkip");
+    const closeBtn = document.getElementById("tutorialClose");
+
+    dotsEl.innerHTML = steps.map(() => "<span></span>").join("");
+    const dots = dotsEl.querySelectorAll("span");
+
+    // Su Android/Chrome il browser può offrire un'installazione in un solo
+    // tocco: se disponibile, la mostriamo come scorciatoia sopra ai passi
+    // manuali (che restano comunque validi come ripiego).
     let deferredPrompt = null;
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      installCta.hidden = false;
+      quickBtn.hidden = false;
     });
-    installCta.addEventListener("click", () => {
+    quickBtn.addEventListener("click", () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       deferredPrompt.userChoice.finally(() => {
         deferredPrompt = null;
-        installCta.hidden = true;
+        quickBtn.hidden = true;
       });
     });
 
-    document.getElementById("installClose").addEventListener("click", () => {
-      banner.hidden = true;
-      localStorage.setItem("installHintDismissed_v1", "1");
+    let step = 0;
+    function renderStep() {
+      const s = steps[step];
+      iconEl.innerHTML = ICONS[s.icon];
+      titleEl.textContent = s.title;
+      descEl.textContent = s.desc;
+      dots.forEach((d, i) => d.classList.toggle("on", i === step));
+      prevBtn.hidden = step === 0;
+      quickBtn.hidden = !(isAndroid && step === 0 && deferredPrompt);
+      nextBtn.textContent = step === steps.length - 1 ? "Fatto, ho salvato! 🎉" : "Avanti";
+    }
+
+    function openTutorial() {
+      step = 0;
+      renderStep();
+      overlay.hidden = false;
+    }
+    function closeTutorial(remember) {
+      overlay.hidden = true;
+      if (remember) localStorage.setItem("installTutorialDone_v1", "1");
+      hintLink.hidden = false; // resta sempre un modo per riaprirlo a piacere
+    }
+
+    prevBtn.addEventListener("click", () => { if (step > 0) { step--; renderStep(); } });
+    nextBtn.addEventListener("click", () => {
+      if (step < steps.length - 1) { step++; renderStep(); }
+      else closeTutorial(true);
     });
+    skipBtn.addEventListener("click", () => closeTutorial(true));
+    closeBtn.addEventListener("click", () => closeTutorial(true));
+    hintLink.addEventListener("click", openTutorial);
+
+    // Al primissimo accesso su questo telefono (cioè la prima volta che si
+    // arriva sulla schermata "scatta/carica") si apre da solo; da lì in poi
+    // resta comunque richiamabile dal link discreto, senza più interrompere
+    // chi ha già scelto di saltarlo o l'ha già completato.
+    return {
+      maybeAutoOpen() {
+        if (!overlay.hidden) return; // già aperto
+        if (localStorage.getItem("installTutorialAutoShown_v1") !== "1") {
+          localStorage.setItem("installTutorialAutoShown_v1", "1");
+          openTutorial();
+        } else {
+          hintLink.hidden = false;
+        }
+      },
+    };
   }
 })();

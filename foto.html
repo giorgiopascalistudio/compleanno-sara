@@ -127,31 +127,99 @@
   .done-icon { font-size: 3rem; margin-bottom: 6px; }
   .done-card p { color: var(--text-dim); line-height: 1.55; margin: 10px 0 22px; }
 
-  /* --- banner "aggiungi a Home", mostrato una volta sola --- */
-  .install-banner {
-    padding: 14px 18px;
-    margin-bottom: 16px;
+  /* --- piccolo link per riaprire il tutorial "aggiungi a Home" a piacere --- */
+  .install-hint-link {
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .install-banner[hidden] { display: none; }
-  .install-banner .ico { font-size: 1.4rem; flex: none; line-height: 1; }
-  .install-banner .txt { flex: 1; }
-  .install-banner .txt b { color: var(--text); }
-  .install-banner p { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--text-dim); }
-  .install-banner .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .install-banner .close-btn {
-    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
     background: none;
     border: none;
     color: var(--text-dim);
-    font-size: 1rem;
-    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 8px;
+    margin-bottom: 6px;
     cursor: pointer;
   }
-  .install-banner .install-cta[hidden] { display: none; }
-  .install-banner .install-cta { margin-top: 10px; padding: 9px 16px; font-size: 0.85rem; }
+  .install-hint-link[hidden] { display: none; }
+  .install-hint-link:hover, .install-hint-link:focus-visible { color: var(--gold-1); }
+
+  /* --- tutorial guidato "aggiungi a schermata Home", passo per passo --- */
+  .tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(7, 5, 2, 0.78);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s ease both;
+  }
+  .tutorial-overlay[hidden] { display: none; }
+  .tutorial-box {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    padding: 30px 26px 24px;
+    text-align: center;
+  }
+  .tutorial-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    padding: 6px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .tutorial-close:hover, .tutorial-close:focus-visible { color: var(--text); }
+  .tutorial-dots { display: flex; justify-content: center; gap: 7px; margin-bottom: 20px; }
+  .tutorial-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line-strong);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .tutorial-dots span.on { background: var(--gold-1); transform: scale(1.25); }
+  .tutorial-icon {
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: var(--card-soft);
+    border: 1px solid var(--line-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-1);
+  }
+  .tutorial-icon svg { width: 30px; height: 30px; }
+  .tutorial-title { font-size: 1.25rem; margin: 0 0 10px; }
+  .tutorial-desc { color: var(--text-dim); line-height: 1.55; margin: 0; font-size: 0.94rem; }
+  .tutorial-quick { width: 100%; margin-top: 18px; }
+  .tutorial-quick[hidden] { display: none; }
+  .tutorial-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 24px; }
+  .tutorial-nav-right { display: flex; align-items: center; gap: 8px; }
+  .tutorial-nav .icon-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .tutorial-nav .icon-btn[hidden] { display: none; }
+  .tutorial-nav #tutorialNext { padding: 12px 22px; }
 </style>
 </head>
 <body>
@@ -188,16 +256,7 @@
 
   <!-- SCREEN: scatta/carica un ricordo -->
   <section class="screen" id="screen-capture">
-    <div class="card install-banner" id="installBanner" hidden>
-      <div class="ico">📲</div>
-      <div class="txt">
-        <div class="row">
-          <p id="installText"><b>Consiglio:</b> aggiungi questa pagina alla schermata Home per riaprirla in un tap per tutta la serata, senza dover reinquadrare il QR ogni volta.</p>
-          <button class="close-btn" id="installClose" title="Chiudi" aria-label="Chiudi">✕</button>
-        </div>
-        <button class="btn gold install-cta" id="installCta" hidden>Installa 📲</button>
-      </div>
-    </div>
+    <button class="install-hint-link" id="installHintLink" hidden>📲 Come salvo questa pagina in Home?</button>
 
     <div class="hero">
       <div class="balloon">📸</div>
@@ -235,12 +294,30 @@
 </main>
 </div>
 
+<div class="tutorial-overlay" id="tutorialOverlay" hidden>
+  <div class="card tutorial-box">
+    <button class="tutorial-close" id="tutorialClose" title="Chiudi" aria-label="Chiudi">✕</button>
+    <div class="tutorial-dots" id="tutorialDots"></div>
+    <div class="tutorial-icon" id="tutorialIcon"></div>
+    <h2 class="tutorial-title" id="tutorialTitle"></h2>
+    <p class="tutorial-desc" id="tutorialDesc"></p>
+    <button class="btn gold tutorial-quick" id="tutorialQuickInstall" hidden>⚡ Installa in un tocco</button>
+    <div class="tutorial-nav">
+      <button class="btn ghost" id="tutorialSkip">Salta</button>
+      <div class="tutorial-nav-right">
+        <button class="btn ghost icon-btn" id="tutorialPrev" title="Indietro" aria-label="Indietro" hidden>←</button>
+        <button class="btn" id="tutorialNext">Avanti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="firebase-config.js?v=2"></script>
 <script src="cloudinary-config.js?v=2"></script>
 <script src="sparkles.js?v=2"></script>
 <script>if (window.initGlitter) initGlitter("glitter");</script>
-<script src="capture.js?v=3"></script>
+<script src="capture.js?v=4"></script>
 </body>
 </html>

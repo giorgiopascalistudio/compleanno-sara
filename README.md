@@ -7,8 +7,13 @@ Sito per la festa di compleanno, con due funzioni:
   soli o con Sara), inquadrando un piccolo QR sempre visibile in alto a
   sinistra. La prima volta che si inquadra questo QR viene chiesto nome e
   cognome (una sola volta per telefono): comparirà insieme a un'eventuale
-  didascalia sotto ogni foto/video in proiezione. Se l'host avvia il quiz
-  mentre qualcuno è ancora su questa pagina, la pagina si aggiorna da sola
+  didascalia sotto ogni foto/video in proiezione. Sempre alla primissima
+  apertura parte anche un tutorial guidato, passo per passo e diverso per
+  iPhone/Android, che spiega come salvare la pagina nella schermata Home
+  (così resta pronta per tutta la serata senza dover reinquadrare il QR
+  ogni volta); si può saltare o richiamare in qualsiasi momento dal link
+  "Come salvo questa pagina in Home?". Se l'host avvia il quiz mentre
+  qualcuno è ancora su questa pagina, la pagina si aggiorna da sola
   mostrando un invito a partecipare, senza dover reinquadrare nulla.
 - **Quiz live**: quando l'host lo decide, un'iconcina discreta rivela la
   schermata del quiz — gli invitati inquadrano un altro QR (o toccano
